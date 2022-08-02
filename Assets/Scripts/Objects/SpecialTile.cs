@@ -8,24 +8,30 @@ public class SpecialTile : Tile
 
     private Renderer _renderer;
 
-
-    public override void ShowTrueTile()
+    protected override void Start()
     {
-        _renderer.material.color = TileColor;
-    }
-
-    public override void HideTrueTile()
-    {
-        _renderer.material.color = _baseColor;
-    }
-
-    protected override void Awake()
-    {
-        base.Awake();
-
-        _renderer = GetComponent<Renderer>();
+        base.Start();
 
         _baseColor = TileColor;
         TileColor = Color.red;
+    }
+
+    protected override void ShowTrueTile()
+    {
+        base.ShowTrueTile();
+
+        _renderer.material.color = TileColor;
+    }
+
+    protected override void HideTrueTile()
+    {
+        base.HideTrueTile();
+
+        _renderer.material.color = _baseColor;
+    }
+
+    private void Awake()
+    {
+        _renderer = GetComponent<Renderer>();
     }
 }

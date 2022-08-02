@@ -13,7 +13,8 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+        bool isLeftClick = Input.GetMouseButtonDown(0);
+        if (isLeftClick || Input.GetMouseButtonDown(1))
         {
             RaycastHit hit;
             Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
@@ -23,7 +24,10 @@ public class GameManager : MonoBehaviour
                 if (hit.transform.CompareTag("SpecialTile"))
                 {
                     SpecialTile tile = hit.transform.gameObject.GetComponent<SpecialTile>();
-                    tile.FlickTrueTile(1);
+                    if (isLeftClick)
+                        tile.FlickTrueTile(1);
+                    else
+                        tile.OnTriggered();
                 }
             }
         }

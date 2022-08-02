@@ -6,9 +6,6 @@ public class Tile : MonoBehaviour
 {
     public Color TileColor { get; protected set; }
 
-    //private Renderer _renderer;
-
-
     public void FlickTrueTile(float duration)
     {
         float delay = 0.1f;
@@ -16,24 +13,22 @@ public class Tile : MonoBehaviour
         Invoke("HideTrueTile", delay + duration);
     }
 
-    protected virtual void Awake()
+    public void OnTriggered()
     {
-        //_renderer = GetComponent<Renderer>();
+        ShowTrueTile();
+    }
 
+    protected virtual void Start()
+    {
         TileColor = Color.white;
     }
 
-    private void Start()
-    {
-        //_renderer.material.color = TileColor;
-    }
-
-    public virtual void ShowTrueTile()
+    protected virtual void ShowTrueTile()
     {
         // Do nothing for base tile
     }
 
-    public virtual void HideTrueTile()
+    protected virtual void HideTrueTile()
     {
         // Do nothing for base tile
     }
