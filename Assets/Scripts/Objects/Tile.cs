@@ -7,11 +7,24 @@ public class Tile : MonoBehaviour
     public Color TileColor { get; protected set; }
 
     private bool _isTriggered;
+
     private bool _isFlickered;
+
+    private BoxCollider _collider;
 
     public bool IsFlickered() => _isFlickered;
 
     public bool IsTriggered() => _isTriggered;
+
+    public float GetSideLength()
+    {
+        if (_collider == null)
+        {
+            _collider = GetComponent<BoxCollider>();
+        }
+
+        return _collider.size.x * transform.localScale.x;
+    }
 
     public void FlickTrueTile(float duration)
     {
@@ -35,6 +48,14 @@ public class Tile : MonoBehaviour
             ShowTrueTile();
         
         _isTriggered = !_isTriggered;
+    }
+
+    protected virtual void Awake()
+    {
+        if (_collider == null)
+        {
+            _collider = GetComponent<BoxCollider>();
+        }
     }
 
     protected virtual void Start()

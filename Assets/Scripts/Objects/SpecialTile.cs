@@ -8,6 +8,13 @@ public class SpecialTile : Tile
 
     private Renderer _renderer;
 
+    protected override void Awake()
+    {
+        base.Awake();
+        
+        _renderer = GetComponent<Renderer>();
+    }
+
     protected override void Start()
     {
         base.Start();
@@ -28,10 +35,5 @@ public class SpecialTile : Tile
         base.HideTrueTile();
 
         _renderer.material.color = _baseColor;
-    }
-
-    private void Awake()
-    {
-        _renderer = GetComponent<Renderer>();
     }
 }
