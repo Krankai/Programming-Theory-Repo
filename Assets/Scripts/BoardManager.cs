@@ -18,8 +18,6 @@ public class BoardManager : MonoBehaviour
 
     private Tile _normalTileScript;
 
-    private SpecialTile _specialTileScript;
-
     private TileType[,] _tileMatrix;
 
     private bool _hasDistributedTiles;
@@ -27,18 +25,44 @@ public class BoardManager : MonoBehaviour
     [ContextMenu("Distribute Tiles")]
     public void DistributeTiles()
     {
-        int specialTileCount = _rows;       // each row have 1
-        int normalTileCount = _rows * _columns - specialTileCount;
+        // note: bring this to argument later
+        bool hasNumberedTiles = false;      // decide based on current round
 
+        int total = _rows * _columns;
+
+        int numberedTileModifier = 5;       // each 5 rows have 1
+        int numberedTileCount = hasNumberedTiles ? _rows / numberedTileModifier : 0;
+
+        bool isSetNumbered = false;
         for (int i = 0; i < _rows; ++i)
         {
             bool isSetSpecial = false;
 
             for (int j = 0; j < _columns; ++j)
             {
-                if (!isSetSpecial)
+                if (!isSetNumbered)
                 {
-                    bool isValid = (j == _columns - 1) || (Random.Range(0, _columns) % _columns == 0);
+                    bool isLastTileOfBoard = (i == _rows - 1 && j == _columns - 1);
+                    bool isValid = isLastTileOfBoard || (Random.Range(0, total) == 0);
+
+                    if (isValid)
+                    {
+                        isSetNumbered = (--numberedTileCount <= 0);
+                        _tileMatrix[i, j] = TileType.Numbered;
+
+                        // numbered tile takes priority over special tile
+                        isSetSpecial = true;
+
+                        continue;
+                    }
+                }
+
+                bool isLastRow = (i == _rows - 1);
+                if (!isSetSpecial && !(isLastRow && !isSetNumbered))
+                {
+                    bool isLastTileOnRow = (j == _columns - 1);
+                    bool isValid = isLastTileOnRow || (Random.Range(0, _columns) == 0);
+
                     if (isValid)
                     {
                         isSetSpecial = true;
@@ -77,10 +101,7 @@ public class BoardManager : MonoBehaviour
             DistributeTiles();
         }
 
-        // Generate normal tile
-        //SpawnNormalTiles(_rows, _columns);
         SpawnTiles();
-
         IsInitBoard = true;
     }
 
@@ -122,28 +143,6 @@ public class BoardManager : MonoBehaviour
         _hasDistributedTiles = false;
     }
 
-    // Spawn normal tiles in a square format
-    private void SpawnNormalTiles(int rows, int columns)
-    {
-        // Determine position of (top,left) point of the square
-        float tileSideLength = _normalTileScript.GetSideLength();
-
-        float colLength = rows * tileSideLength;
-        float rowLength = columns * tileSideLength;
-
-        Vector3 topLeftPosition = new Vector3(-rowLength / 2f, 0f, colLength / 2f);
-
-        // Spawn normal tiles
-        for (int i = 0; i < rows; ++i)
-        {
-            for (int j = 0; j < columns; ++j)
-            {
-                Vector3 spawnPosition = topLeftPosition + new Vector3((j + 0.5f) * tileSideLength, 0, -(0.5f + i) * tileSideLength);
-                Instantiate(_normalTilePrefab, spawnPosition, _normalTilePrefab.transform.rotation, transform);
-            }
-        }
-    }
-
     // Spawn tiles based on the previously distributed board (must call method DistributeTiles() before)
     private void SpawnTiles()
     {
@@ -169,6 +168,10 @@ public class BoardManager : MonoBehaviour
                 if (_tileMatrix[i, j] == TileType.Special)
                 {
                     spawnPrefab = _specialTilePrefab;
+                }
+                else if (_tileMatrix[i, j] == TileType.Numbered)
+                {
+                    spawnPrefab = _numberedTilePrefab;
                 }
 
                 Instantiate(spawnPrefab, spawnPosition, _normalTilePrefab.transform.rotation, transform);
