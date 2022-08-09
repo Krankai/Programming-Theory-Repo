@@ -4,62 +4,62 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] private float startingSpeed = 5.0f;
+    [SerializeField] private float _startingSpeed = 5.0f;
 
-    [SerializeField] private float maxSpeed = 10.0f;
+    [SerializeField] private float _maxSpeed = 10.0f;
 
-    [SerializeField] private float accelerationRate = 1.0f;     // speed per second
+    [SerializeField] private float _accelerationRate = 1.0f;    // speed per second
 
-    [SerializeField] private float decelerationRate = 2.0f;    // speed per second
+    [SerializeField] private float _decelerationRate = 2.0f;    // speed per second
 
-    [SerializeField] private float decelerateWaitTime = 0.5f;   // waiting time for the current speed to be reset (after no input from users)
+    [SerializeField] private float _decelerateWaitTime = 0.5f;  // waiting time for the current speed to be reset (after no input from users)
 
     //private bool isTouchDevice;
 
-    private float currentSpeed;
+    private float _currentSpeed;
 
-    private bool decelerateFlag;
+    private bool _decelerateFlag;
 
-    private float decelerateTiming;
+    private float _decelerateTiming;
 
-    private bool isMouseDragged;
+    private bool _isMouseDragged;
 
-    private bool isGrounded;
+    private bool _isGrounded;
 
-    private Vector3 mouseStartPosition;
+    private Vector3 _mouseStartPosition;
 
-    private Rigidbody rb;
+    private Rigidbody _rigidBody;
 
-    private Vector3 vectorZero;
+    private Vector3 _vectorZero;
 
     private void Awake()
     {
-        rb = GetComponent<Rigidbody>();
+        _rigidBody = GetComponent<Rigidbody>();
     }
 
     private void Start()
     {
-        vectorZero = Vector3.zero;
+        _vectorZero = Vector3.zero;
 
-        currentSpeed = startingSpeed;
-        decelerateFlag = false;
-        decelerateTiming = decelerateWaitTime;
-        isMouseDragged = false;
-        isGrounded = false;
+        _currentSpeed = _startingSpeed;
+        _decelerateFlag = false;
+        _decelerateTiming = _decelerateWaitTime;
+        _isMouseDragged = false;
+        _isGrounded = false;
 
-        mouseStartPosition = vectorZero;
+        _mouseStartPosition = _vectorZero;
     }
 
     private void FixedUpdate()
     {
-        if (isGrounded && rb.velocity.y != 0)
+        if (_isGrounded && _rigidBody.velocity.y != 0)
         {
-            rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
+            _rigidBody.velocity = new Vector3(_rigidBody.velocity.x, 0, _rigidBody.velocity.z);
         }
 
-        if (decelerateFlag)
+        if (_decelerateFlag)
         {
-            rb.velocity *= Mathf.Clamp(1 - Time.fixedDeltaTime * decelerationRate, 0, 1);
+            _rigidBody.velocity *= Mathf.Clamp(1 - Time.fixedDeltaTime * _decelerationRate, 0, 1);
         }
     }
 
@@ -80,7 +80,7 @@ public class PlayerController : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Ground"))
         {
-            isGrounded = true;
+            _isGrounded = true;
         }
     }
 
@@ -88,18 +88,18 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            if (!isMouseDragged)
+            if (!_isMouseDragged)
             {
-                mouseStartPosition = Input.mousePosition;
+                _mouseStartPosition = Input.mousePosition;
             }
-            isMouseDragged = true;
+            _isMouseDragged = true;
         }
         else if (Input.GetMouseButtonUp(0))
         {
-            isMouseDragged = false;
+            _isMouseDragged = false;
         }
 
-        if (isMouseDragged)
+        if (_isMouseDragged)
         {
             Vector3 currentMousePosition = Input.mousePosition;
 
@@ -113,7 +113,7 @@ public class PlayerController : MonoBehaviour
         float minInputValue = -1f;
         float maxInputValue = 1f;
 
-        float horizontalDelta = currentMousePosition.x - mouseStartPosition.x;
+        float horizontalDelta = currentMousePosition.x - _mouseStartPosition.x;
         return Mathf.Clamp(horizontalDelta, minInputValue, maxInputValue);
     }
 
@@ -122,7 +122,7 @@ public class PlayerController : MonoBehaviour
         float minInputValue = -1f;
         float maxInputValue = 1f;
 
-        float verticalDelta = currentMousePosition.y - mouseStartPosition.y;
+        float verticalDelta = currentMousePosition.y - _mouseStartPosition.y;
         return Mathf.Clamp(verticalDelta, minInputValue, maxInputValue);
     }
 
@@ -130,37 +130,37 @@ public class PlayerController : MonoBehaviour
     {
         bool receivedInput = (horizontalInput != 0 || verticalInput != 0);
 
-        if (currentSpeed > startingSpeed)
+        if (_currentSpeed > _startingSpeed)
         {
-            if (!decelerateFlag && !receivedInput)
+            if (!_decelerateFlag && !receivedInput)
             {
-                decelerateFlag = true;
+                _decelerateFlag = true;
             }
             else if (receivedInput)
             {
-                decelerateFlag = false;
-                decelerateTiming = decelerateWaitTime;
+                _decelerateFlag = false;
+                _decelerateTiming = _decelerateWaitTime;
             }
         }
 
-        if (decelerateFlag)
+        if (_decelerateFlag)
         {
-            decelerateTiming -= Time.deltaTime;
-            if (decelerateTiming <= 0)
+            _decelerateTiming -= Time.deltaTime;
+            if (_decelerateTiming <= 0)
             {
-                decelerateFlag = false;
-                decelerateTiming = decelerateWaitTime;
+                _decelerateFlag = false;
+                _decelerateTiming = _decelerateWaitTime;
 
-                currentSpeed = startingSpeed;
+                _currentSpeed = _startingSpeed;
             }
         }
 
         if (receivedInput)
         {
-            currentSpeed = Mathf.Clamp(currentSpeed + Time.deltaTime * accelerationRate, startingSpeed, maxSpeed);
+            _currentSpeed = Mathf.Clamp(_currentSpeed + Time.deltaTime * _accelerationRate, _startingSpeed, _maxSpeed);
 
-            Vector3 appliedForce = new Vector3(horizontalInput * Time.deltaTime * currentSpeed, 0, verticalInput * Time.deltaTime * currentSpeed);
-            rb.AddForce(appliedForce, ForceMode.VelocityChange);
+            Vector3 appliedForce = new Vector3(horizontalInput * Time.deltaTime * _currentSpeed, 0, verticalInput * Time.deltaTime * _currentSpeed);
+            _rigidBody.AddForce(appliedForce, ForceMode.VelocityChange);
         }
     }
 }

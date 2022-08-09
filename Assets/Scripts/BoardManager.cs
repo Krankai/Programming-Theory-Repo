@@ -56,7 +56,7 @@ public class BoardManager : MonoBehaviour
         int total = transform.childCount;
         for (int i = 0; i < total; ++i)
         {
-            transform.GetChild(i).gameObject.GetComponent<Tile>().FlickTrueTile(flickDuration);
+            transform.GetChild(i).gameObject.GetComponent<Tile>()?.FlickTrueTile(flickDuration);
         }
     }
 
@@ -168,27 +168,51 @@ public class BoardManager : MonoBehaviour
         float colLength = _rows * tileSideLength;
         float rowLength = _columns * tileSideLength;
 
-        // top
-        GameObject topWall = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        topWall.name = "TopBoundary";
-        topWall.transform.parent = transform;
-        
-        BoxCollider collider = topWall.GetComponent<BoxCollider>();
-        topWall.transform.localScale = new Vector3(rowLength / collider.size.x, 1, 0.1f);
+        CreateBoundary("TopBoundary", Boundary.Top, rowLength, colLength, transform);
+        CreateBoundary("BottomBoundary", Boundary.Bottom, rowLength, colLength, transform);
+        CreateBoundary("LeftBoundary", Boundary.Left, rowLength, colLength, transform);
+        CreateBoundary("RightBoundary", Boundary.Right, rowLength, colLength, transform);
+    }
 
-        float zPosition = midbotBoardTransform.position.z + colLength + topWall.transform.localScale.z * collider.size.z / 2;
-        topWall.transform.position = new Vector3(0, 0, zPosition);
+    private void CreateBoundary(string name, Boundary type, float rowLength, float colLength, Transform parent)
+    {
+        bool isVerticalDirection = (type == Boundary.Top || type == Boundary.Bottom);
 
-        // bottom
-        GameObject bottomWall = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        bottomWall.name = "BottomBoundary";
-        bottomWall.transform.parent = transform;
-        
-        collider = bottomWall.GetComponent<BoxCollider>();
-        bottomWall.transform.localScale = /*new Vector3(rowLength / collider.size.x, 1, 0.1f)*/topWall.transform.localScale;
+        GameObject boundaryObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        boundaryObject.name = name;
+        boundaryObject.transform.parent = parent;
 
-        zPosition = midbotBoardTransform.position.z - bottomWall.transform.localScale.z * collider.size.z / 2;
-        bottomWall.transform.position = new Vector3(0, 0, zPosition);
+        // scale
+        BoxCollider collider = boundaryObject.GetComponent<BoxCollider>();
+        boundaryObject.transform.localScale = isVerticalDirection
+            ? new Vector3(rowLength / collider.size.x, 1, 0.1f)
+            : new Vector3(0.1f, 1, colLength / collider.size.z);
+
+        // position
+        float xPosition = midbotBoardTransform.position.x;
+        if (type == Boundary.Left)
+        {
+            xPosition -= rowLength / 2 + boundaryObject.transform.localScale.x * collider.size.x / 2;
+        }
+        else if (type == Boundary.Right)
+        {
+            xPosition += rowLength / 2 + boundaryObject.transform.localScale.x * collider.size.x / 2;
+        }
+
+        float zPosition = midbotBoardTransform.position.z + colLength / 2;
+        if (type == Boundary.Top)
+        {
+            zPosition += colLength / 2 + boundaryObject.transform.localScale.z * collider.size.z / 2;
+        }
+        else if (type == Boundary.Bottom)
+        {
+            zPosition -= colLength / 2 + boundaryObject.transform.localScale.z * collider.size.z / 2;
+        }
+
+        boundaryObject.transform.position = new Vector3(xPosition, 0, zPosition);
+
+        // disable MeshRender (to not appear visually in game scene)
+        boundaryObject.GetComponent<MeshRenderer>().enabled = false;
     }
 }
 
@@ -197,4 +221,12 @@ enum TileType
     Normal = 0,
     Special,
     Numbered,
+}
+
+enum Boundary
+{
+    Top = 0,
+    Bottom,
+    Left,
+    Right,
 }
