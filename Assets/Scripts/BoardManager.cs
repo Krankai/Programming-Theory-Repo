@@ -20,92 +20,19 @@ public class BoardManager : MonoBehaviour
 
     private TileType[,] _tileMatrix;
 
-    private bool _hasDistributedTiles;
-
-    [ContextMenu("Distribute Tiles")]
-    public void DistributeTiles()
+    public void GenerateBoard(int numberedTileCount)
     {
-        // note: bring this to argument later
-        bool hasNumberedTiles = false;      // decide based on current round
-
-        int total = _rows * _columns;
-
-        int numberedTileModifier = 5;       // each 5 rows have 1
-        int numberedTileCount = hasNumberedTiles ? _rows / numberedTileModifier : 0;
-
-        bool isSetNumbered = false;
-        for (int i = 0; i < _rows; ++i)
+        if (IsInitBoard)
         {
-            bool isSetSpecial = false;
-
-            for (int j = 0; j < _columns; ++j)
-            {
-                if (!isSetNumbered)
-                {
-                    bool isLastTileOfBoard = (i == _rows - 1 && j == _columns - 1);
-                    bool isValid = isLastTileOfBoard || (Random.Range(0, total) == 0);
-
-                    if (isValid)
-                    {
-                        isSetNumbered = (--numberedTileCount <= 0);
-                        _tileMatrix[i, j] = TileType.Numbered;
-
-                        // numbered tile takes priority over special tile
-                        isSetSpecial = true;
-
-                        continue;
-                    }
-                }
-
-                bool isLastRow = (i == _rows - 1);
-                if (!isSetSpecial && !(isLastRow && !isSetNumbered))
-                {
-                    bool isLastTileOnRow = (j == _columns - 1);
-                    bool isValid = isLastTileOnRow || (Random.Range(0, _columns) == 0);
-
-                    if (isValid)
-                    {
-                        isSetSpecial = true;
-                        _tileMatrix[i, j] = TileType.Special;
-
-                        continue;
-                    }
-                }
-
-                _tileMatrix[i, j] = TileType.Normal;
-            }
+            ClearBoard();
         }
 
-        _hasDistributedTiles = true;
-
-        // DEBUG TEST
-        // for (int i = 0; i < _rows; ++i)
-        // {
-        //     string rowWeights = "";
-        //     for (int j = 0; j < _columns; ++j)
-        //     {
-        //         int temp = (int)_tileMatrix[i, j];
-        //         rowWeights += $"{temp} ";
-        //     }
-
-        //     Debug.Log(i + ": " + rowWeights);
-        // }
-    }
-
-    [ContextMenu("Generate Board")]
-    public void GenerateBoard()
-    {
-        if (!_hasDistributedTiles)
-        {
-            Debug.LogWarning("Need to distribute tiles first!");
-            DistributeTiles();
-        }
-
+        DistributeTiles(numberedTileCount);
         SpawnTiles();
+
         IsInitBoard = true;
     }
 
-    [ContextMenu("Clear Board")]
     public void ClearBoard()
     {
         int total = transform.childCount;
@@ -117,17 +44,15 @@ public class BoardManager : MonoBehaviour
         IsInitBoard = false;
     }
 
-    // Flick true state of all tiles on the board on
-    [ContextMenu("Flick Board")]
-    public void FlickBoard()
+    // Flick true state of all tiles on the board on for the special duration
+    public void FlickBoard(float flickDuration)
     {
-        // NOTE: bring this to argument later
-        float duration = 1.0f;
+        if (!IsInitBoard) return;
 
         int total = transform.childCount;
         for (int i = 0; i < total; ++i)
         {
-            transform.GetChild(i).gameObject.GetComponent<Tile>().FlickTrueTile(duration);
+            transform.GetChild(i).gameObject.GetComponent<Tile>().FlickTrueTile(flickDuration);
         }
     }
 
@@ -137,10 +62,63 @@ public class BoardManager : MonoBehaviour
         _tileMatrix = new TileType[_rows, _columns];
     }
 
+    private void OnValidate()
+    {
+        _tileMatrix = new TileType[_rows, _columns];
+    }
+
     private void Start()
     {
         IsInitBoard = false;
-        _hasDistributedTiles = false;
+    }
+
+    private void DistributeTiles(int numberedTileCount)
+    {
+        int total = _rows * _columns;
+
+        for (int i = 0; i < _rows; ++i)
+        {
+            bool isSetAbnormalTile = false;     // for each row
+
+            for (int j = 0; j < _columns; ++j)
+            {
+                bool isLastTileOfRow = (j == _columns - 1);
+                bool isLastTileOfBoard = isLastTileOfRow && (i == _rows - 1);
+
+                int numRowsLeft = _rows - i;
+
+                // Check for numbered tile
+                if (!isSetAbnormalTile && numberedTileCount > 0)
+                {
+                    bool isNumberedTile = (isLastTileOfRow && numRowsLeft <= numberedTileCount) || Random.Range(0, _columns) == 0;
+
+                    if (isNumberedTile)
+                    {
+                        isSetAbnormalTile = true;
+                        --numberedTileCount;
+                        _tileMatrix[i, j] = TileType.Numbered;
+
+                        continue;
+                    }
+                }
+
+                // Check for special tile
+                if (!isSetAbnormalTile && numRowsLeft > numberedTileCount)
+                {
+                    bool isSpecialTile = isLastTileOfRow || (Random.Range(0, _columns) == 0);
+
+                    if (isSpecialTile)
+                    {
+                        isSetAbnormalTile = true;
+                        _tileMatrix[i, j] = TileType.Special;
+
+                        continue;
+                    }
+                }
+
+                _tileMatrix[i, j] = TileType.Normal;
+            }
+        }
     }
 
     // Spawn tiles based on the previously distributed board (must call method DistributeTiles() before)
