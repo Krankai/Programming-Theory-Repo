@@ -16,6 +16,8 @@ public class BoardManager : MonoBehaviour
 
     [SerializeField] private int _columns;
 
+    [SerializeField] private Transform midbotBoardTransform;
+
     private Tile _normalTileScript;
 
     private TileType[,] _tileMatrix;
@@ -29,6 +31,8 @@ public class BoardManager : MonoBehaviour
 
         DistributeTiles(numberedTileCount);
         SpawnTiles();
+
+        SetupBoundaries();
 
         IsInitBoard = true;
     }
@@ -133,7 +137,7 @@ public class BoardManager : MonoBehaviour
         float colLength = rows * tileSideLength;
         float rowLength = cols * tileSideLength;
 
-        Vector3 topLeftPosition = new Vector3(-rowLength / 2f, 0f, colLength / 2f);
+        Vector3 topLeftPosition = new Vector3(midbotBoardTransform.position.x - rowLength / 2f, 0f, midbotBoardTransform.position.z + colLength);
 
         // Spawning...
         for (int i = 0; i < rows; ++i)
@@ -155,6 +159,36 @@ public class BoardManager : MonoBehaviour
                 Instantiate(spawnPrefab, spawnPosition, _normalTilePrefab.transform.rotation, transform);
             }
         }
+    }
+
+    private void SetupBoundaries()
+    {
+        float tileSideLength = _normalTileScript.GetSideLength();
+
+        float colLength = _rows * tileSideLength;
+        float rowLength = _columns * tileSideLength;
+
+        // top
+        GameObject topWall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        topWall.name = "TopBoundary";
+        topWall.transform.parent = transform;
+        
+        BoxCollider collider = topWall.GetComponent<BoxCollider>();
+        topWall.transform.localScale = new Vector3(rowLength / collider.size.x, 1, 0.1f);
+
+        float zPosition = midbotBoardTransform.position.z + colLength + topWall.transform.localScale.z * collider.size.z / 2;
+        topWall.transform.position = new Vector3(0, 0, zPosition);
+
+        // bottom
+        GameObject bottomWall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        bottomWall.name = "BottomBoundary";
+        bottomWall.transform.parent = transform;
+        
+        collider = bottomWall.GetComponent<BoxCollider>();
+        bottomWall.transform.localScale = /*new Vector3(rowLength / collider.size.x, 1, 0.1f)*/topWall.transform.localScale;
+
+        zPosition = midbotBoardTransform.position.z - bottomWall.transform.localScale.z * collider.size.z / 2;
+        bottomWall.transform.position = new Vector3(0, 0, zPosition);
     }
 }
 
