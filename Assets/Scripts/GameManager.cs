@@ -4,11 +4,11 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    [SerializeField] private BoardManager _boardManager;
-
-    [SerializeField] private GameObject _playerPrefab;
-
     [SerializeField] private float _playerStartingHeight = 8f;
+
+    private BoardManager _boardManager;
+
+    private SpawnManager _spawnManager;
 
     private Camera _camera;
 
@@ -36,7 +36,6 @@ public class GameManager : MonoBehaviour
     {
         _boardManager.ClearBoard();
     }
-    #endregion
 
     [ContextMenu("Spawn Player")]
     public void SpawnPlayer()
@@ -46,15 +45,14 @@ public class GameManager : MonoBehaviour
         Vector3 spawnPosition = _boardManager.MidPoint;
         spawnPosition.y = _playerStartingHeight;
 
-        GameObject playerObject = Instantiate(_playerPrefab, spawnPosition, _playerPrefab.transform.rotation);
+        _spawnManager.SpawnPlayer(spawnPosition);
     }
+    #endregion
 
     private void Awake()
     {
-        // if (_boardManager == null)
-        // {
-        //     _boardManager = GameObject.Find("BoardManager").GetComponent<BoardManager>();
-        // }
+        _boardManager = GameObject.Find("BoardManager").GetComponent<BoardManager>();
+        _spawnManager = GameObject.Find("SpawnManager").GetComponent<SpawnManager>();
         
         _camera = Camera.main;
     }

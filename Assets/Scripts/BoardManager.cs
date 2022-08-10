@@ -12,12 +12,6 @@ public class BoardManager : MonoBehaviour
 
     public float GetColLength() => _colLength;
 
-    [SerializeField] private GameObject _normalTilePrefab;
-
-    [SerializeField] private GameObject _specialTilePrefab;
-
-    [SerializeField] private GameObject _numberedTilePrefab;
-
     [SerializeField] private int _rows;
 
     [SerializeField] private int _columns;
@@ -28,8 +22,6 @@ public class BoardManager : MonoBehaviour
 
     [SerializeField] private GameObject _boundariesGroupObject;
 
-    private Tile _normalTileScript;
-
     private TileType[,] _tileMatrix;
 
     private float _rowLength;
@@ -37,6 +29,8 @@ public class BoardManager : MonoBehaviour
     private float _colLength;
 
     private float _midpoint;
+
+    private SpawnManager _spawnManager;
 
     public void GenerateBoard(int numberedTileCount)
     {
@@ -82,7 +76,7 @@ public class BoardManager : MonoBehaviour
 
     private void Awake()
     {
-        _normalTileScript = _normalTilePrefab.GetComponent<Tile>();
+        _spawnManager = GameObject.Find("SpawnManager").GetComponent<SpawnManager>();
         _tileMatrix = new TileType[_rows, _columns];
     }
 
@@ -95,8 +89,8 @@ public class BoardManager : MonoBehaviour
     {
         IsInitBoard = false;
 
-        _rowLength = _normalTileScript.GetSideLength() * _rows;
-        _colLength = _normalTileScript.GetSideLength() * _columns;
+        _rowLength = _spawnManager.GetTileSideLength() * _rows;
+        _colLength = _spawnManager.GetTileSideLength() * _columns;
 
         MidPoint = new Vector3(_midbotBoardTransform.position.x, 0, _midbotBoardTransform.position.z + _colLength / 2);
     }
@@ -153,7 +147,7 @@ public class BoardManager : MonoBehaviour
     // Spawn tiles based on the previously distributed board (must call method DistributeTiles() before)
     private void SpawnTiles()
     {
-        float tileSideLength = _normalTileScript.GetSideLength();
+        float tileSideLength = _spawnManager.GetTileSideLength();
         Vector3 topLeftPosition = new Vector3(_midbotBoardTransform.position.x - _rowLength / 2f, 0f, _midbotBoardTransform.position.z + _colLength);
 
         // Spawning...
@@ -162,18 +156,7 @@ public class BoardManager : MonoBehaviour
             for (int j = 0; j < _columns; ++j)
             {
                 Vector3 spawnPosition = topLeftPosition + new Vector3((j + 0.5f) * tileSideLength, 0, -(0.5f + i) * tileSideLength);
-                
-                GameObject spawnPrefab = _normalTilePrefab;
-                if (_tileMatrix[i, j] == TileType.Special)
-                {
-                    spawnPrefab = _specialTilePrefab;
-                }
-                else if (_tileMatrix[i, j] == TileType.Numbered)
-                {
-                    spawnPrefab = _numberedTilePrefab;
-                }
-
-                Instantiate(spawnPrefab, spawnPosition, _normalTilePrefab.transform.rotation, _tilesGroupObject ? _tilesGroupObject.transform : transform);
+                _spawnManager.SpawnTile(_tileMatrix[i,j], spawnPosition, _tilesGroupObject ? _tilesGroupObject.transform : transform);
             }
         }
     }
@@ -230,13 +213,6 @@ public class BoardManager : MonoBehaviour
         // disable MeshRender (to not appear visually in game scene)
         boundaryObject.GetComponent<MeshRenderer>().enabled = false;
     }
-}
-
-enum TileType
-{
-    Normal = 0,
-    Special,
-    Numbered,
 }
 
 enum Boundary

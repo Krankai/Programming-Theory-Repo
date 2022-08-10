@@ -80,3 +80,10 @@ public class Tile : MonoBehaviour
         _isFlickered = state;
     }
 }
+
+public enum TileType
+{
+    Normal = 0,
+    Special,
+    Numbered,
+}
