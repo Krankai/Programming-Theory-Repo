@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    public static PlayerController Instance { get; private set; }
+
     [SerializeField] private float _startingSpeed = 5.0f;
 
     [SerializeField] private float _maxSpeed = 10.0f;
@@ -30,10 +32,24 @@ public class PlayerController : MonoBehaviour
 
     private Rigidbody _rigidBody;
 
+    private MeshRenderer _meshRenderer;
+
     private Vector3 _vectorZero;
 
     private void Awake()
     {
+        _meshRenderer = GetComponent<MeshRenderer>();
+        _meshRenderer.enabled = false;
+
+        if (Instance != null && Instance != this)
+        {
+            Destroy(this.gameObject);
+        }
+        else
+        {
+            Instance = this;
+        }
+
         _rigidBody = GetComponent<Rigidbody>();
     }
 
@@ -48,6 +64,8 @@ public class PlayerController : MonoBehaviour
         _isGrounded = false;
 
         _mouseStartPosition = _vectorZero;
+
+        _meshRenderer.enabled = true;
     }
 
     private void FixedUpdate()
@@ -79,6 +97,10 @@ public class PlayerController : MonoBehaviour
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("Ground"))
+        {
+            _isGrounded = true;
+        }
+        else if (collision.gameObject.GetComponent<Tile>())
         {
             _isGrounded = true;
         }

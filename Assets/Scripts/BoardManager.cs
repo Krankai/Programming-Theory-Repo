@@ -6,6 +6,12 @@ public class BoardManager : MonoBehaviour
 {
     public bool IsInitBoard { get; private set; }
 
+    public Vector3 MidPoint { get; private set; }
+
+    public float GetRowLength() => _rowLength;
+
+    public float GetColLength() => _colLength;
+
     [SerializeField] private GameObject _normalTilePrefab;
 
     [SerializeField] private GameObject _specialTilePrefab;
@@ -16,11 +22,21 @@ public class BoardManager : MonoBehaviour
 
     [SerializeField] private int _columns;
 
-    [SerializeField] private Transform midbotBoardTransform;
+    [SerializeField] private Transform _midbotBoardTransform;
+
+    [SerializeField] private GameObject _tilesGroupObject;
+
+    [SerializeField] private GameObject _boundariesGroupObject;
 
     private Tile _normalTileScript;
 
     private TileType[,] _tileMatrix;
+
+    private float _rowLength;
+
+    private float _colLength;
+
+    private float _midpoint;
 
     public void GenerateBoard(int numberedTileCount)
     {
@@ -39,10 +55,12 @@ public class BoardManager : MonoBehaviour
 
     public void ClearBoard()
     {
-        int total = transform.childCount;
+        Transform parentTransform = _tilesGroupObject ? _tilesGroupObject.transform : transform;
+
+        int total = parentTransform.childCount;
         for (int i = 0; i < total; ++i)
         {
-            Destroy(transform.GetChild(i).gameObject);
+            Destroy(parentTransform.GetChild(i).gameObject);
         }
 
         IsInitBoard = false;
@@ -53,10 +71,12 @@ public class BoardManager : MonoBehaviour
     {
         if (!IsInitBoard) return;
 
-        int total = transform.childCount;
+        Transform parentTransform = _tilesGroupObject ? _tilesGroupObject.transform : transform;
+
+        int total = parentTransform.childCount;
         for (int i = 0; i < total; ++i)
         {
-            transform.GetChild(i).gameObject.GetComponent<Tile>()?.FlickTrueTile(flickDuration);
+            parentTransform.GetChild(i).gameObject.GetComponent<Tile>()?.FlickTrueTile(flickDuration);
         }
     }
 
@@ -74,6 +94,11 @@ public class BoardManager : MonoBehaviour
     private void Start()
     {
         IsInitBoard = false;
+
+        _rowLength = _normalTileScript.GetSideLength() * _rows;
+        _colLength = _normalTileScript.GetSideLength() * _columns;
+
+        MidPoint = new Vector3(_midbotBoardTransform.position.x, 0, _midbotBoardTransform.position.z + _colLength / 2);
     }
 
     private void DistributeTiles(int numberedTileCount)
@@ -128,21 +153,13 @@ public class BoardManager : MonoBehaviour
     // Spawn tiles based on the previously distributed board (must call method DistributeTiles() before)
     private void SpawnTiles()
     {
-        int rows = _rows;
-        int cols = _columns;
-
-        // Determine position of (top,left) point of the square
         float tileSideLength = _normalTileScript.GetSideLength();
-
-        float colLength = rows * tileSideLength;
-        float rowLength = cols * tileSideLength;
-
-        Vector3 topLeftPosition = new Vector3(midbotBoardTransform.position.x - rowLength / 2f, 0f, midbotBoardTransform.position.z + colLength);
+        Vector3 topLeftPosition = new Vector3(_midbotBoardTransform.position.x - _rowLength / 2f, 0f, _midbotBoardTransform.position.z + _colLength);
 
         // Spawning...
-        for (int i = 0; i < rows; ++i)
+        for (int i = 0; i < _rows; ++i)
         {
-            for (int j = 0; j < cols; ++j)
+            for (int j = 0; j < _columns; ++j)
             {
                 Vector3 spawnPosition = topLeftPosition + new Vector3((j + 0.5f) * tileSideLength, 0, -(0.5f + i) * tileSideLength);
                 
@@ -156,26 +173,25 @@ public class BoardManager : MonoBehaviour
                     spawnPrefab = _numberedTilePrefab;
                 }
 
-                Instantiate(spawnPrefab, spawnPosition, _normalTilePrefab.transform.rotation, transform);
+                Instantiate(spawnPrefab, spawnPosition, _normalTilePrefab.transform.rotation, _tilesGroupObject ? _tilesGroupObject.transform : transform);
             }
         }
     }
 
     private void SetupBoundaries()
     {
-        float tileSideLength = _normalTileScript.GetSideLength();
+        Transform parent = _boundariesGroupObject ? _boundariesGroupObject.transform : transform;
 
-        float colLength = _rows * tileSideLength;
-        float rowLength = _columns * tileSideLength;
-
-        CreateBoundary("TopBoundary", Boundary.Top, rowLength, colLength, transform);
-        CreateBoundary("BottomBoundary", Boundary.Bottom, rowLength, colLength, transform);
-        CreateBoundary("LeftBoundary", Boundary.Left, rowLength, colLength, transform);
-        CreateBoundary("RightBoundary", Boundary.Right, rowLength, colLength, transform);
+        CreateBoundary("TopBoundary", Boundary.Top, _rowLength, _colLength, parent);
+        CreateBoundary("BottomBoundary", Boundary.Bottom, _rowLength, _colLength, parent);
+        CreateBoundary("LeftBoundary", Boundary.Left, _rowLength, _colLength, parent);
+        CreateBoundary("RightBoundary", Boundary.Right, _rowLength, _colLength, parent);
     }
 
     private void CreateBoundary(string name, Boundary type, float rowLength, float colLength, Transform parent)
     {
+        const float DepthScale = 5.0f;
+
         bool isVerticalDirection = (type == Boundary.Top || type == Boundary.Bottom);
 
         GameObject boundaryObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -185,11 +201,11 @@ public class BoardManager : MonoBehaviour
         // scale
         BoxCollider collider = boundaryObject.GetComponent<BoxCollider>();
         boundaryObject.transform.localScale = isVerticalDirection
-            ? new Vector3(rowLength / collider.size.x, 1, 0.1f)
-            : new Vector3(0.1f, 1, colLength / collider.size.z);
+            ? new Vector3(rowLength / collider.size.x, 1, DepthScale)
+            : new Vector3(DepthScale, 1, colLength / collider.size.z);
 
         // position
-        float xPosition = midbotBoardTransform.position.x;
+        float xPosition = _midbotBoardTransform.position.x;
         if (type == Boundary.Left)
         {
             xPosition -= rowLength / 2 + boundaryObject.transform.localScale.x * collider.size.x / 2;
@@ -199,7 +215,7 @@ public class BoardManager : MonoBehaviour
             xPosition += rowLength / 2 + boundaryObject.transform.localScale.x * collider.size.x / 2;
         }
 
-        float zPosition = midbotBoardTransform.position.z + colLength / 2;
+        float zPosition = _midbotBoardTransform.position.z + colLength / 2;
         if (type == Boundary.Top)
         {
             zPosition += colLength / 2 + boundaryObject.transform.localScale.z * collider.size.z / 2;

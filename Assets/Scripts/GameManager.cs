@@ -6,6 +6,10 @@ public class GameManager : MonoBehaviour
 {
     [SerializeField] private BoardManager _boardManager;
 
+    [SerializeField] private GameObject _playerPrefab;
+
+    [SerializeField] private float _playerStartingHeight = 8f;
+
     private Camera _camera;
 
     #region Helpers
@@ -34,12 +38,23 @@ public class GameManager : MonoBehaviour
     }
     #endregion
 
+    [ContextMenu("Spawn Player")]
+    public void SpawnPlayer()
+    {
+        if (!_boardManager.IsInitBoard) return;
+
+        Vector3 spawnPosition = _boardManager.MidPoint;
+        spawnPosition.y = _playerStartingHeight;
+
+        GameObject playerObject = Instantiate(_playerPrefab, spawnPosition, _playerPrefab.transform.rotation);
+    }
+
     private void Awake()
     {
-        if (_boardManager == null)
-        {
-            _boardManager = GameObject.Find("BoardManager").GetComponent<BoardManager>();
-        }
+        // if (_boardManager == null)
+        // {
+        //     _boardManager = GameObject.Find("BoardManager").GetComponent<BoardManager>();
+        // }
         
         _camera = Camera.main;
     }
