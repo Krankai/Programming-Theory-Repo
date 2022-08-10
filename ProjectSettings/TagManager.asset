@@ -7,6 +7,7 @@ TagManager:
   - SpecialTile
   - Dummy
   - Ground
+  - Tile
   layers:
   - Default
   - TransparentFX

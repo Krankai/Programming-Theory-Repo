@@ -100,7 +100,7 @@ public class PlayerController : MonoBehaviour
         {
             _isGrounded = true;
         }
-        else if (collision.gameObject.GetComponent<Tile>())
+        else if (/*collision.gameObject.GetComponent<Tile>()*/collision.gameObject.CompareTag("Tile"))
         {
             _isGrounded = true;
         }

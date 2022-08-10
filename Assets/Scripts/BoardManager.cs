@@ -22,6 +22,10 @@ public class BoardManager : MonoBehaviour
 
     [SerializeField] private GameObject _boundariesGroupObject;
 
+    private Transform TileGroupTransform => _tilesGroupObject ? _tilesGroupObject.transform : transform;
+
+    private Transform BoundaryGroupTransform => _boundariesGroupObject ? _boundariesGroupObject.transform : transform;
+
     private TileType[,] _tileMatrix;
 
     private float _rowLength;
@@ -49,7 +53,7 @@ public class BoardManager : MonoBehaviour
 
     public void ClearBoard()
     {
-        Transform parentTransform = _tilesGroupObject ? _tilesGroupObject.transform : transform;
+        Transform parentTransform = TileGroupTransform;
 
         int total = parentTransform.childCount;
         for (int i = 0; i < total; ++i)
@@ -61,16 +65,32 @@ public class BoardManager : MonoBehaviour
     }
 
     // Flick true state of all tiles on the board on for the special duration
-    public void FlickBoard(float flickDuration)
+    public void FlickerBoard(float flickDuration)
     {
         if (!IsInitBoard) return;
 
-        Transform parentTransform = _tilesGroupObject ? _tilesGroupObject.transform : transform;
+        Transform parentTransform = TileGroupTransform;
 
         int total = parentTransform.childCount;
         for (int i = 0; i < total; ++i)
         {
-            parentTransform.GetChild(i).gameObject.GetComponent<Tile>()?.FlickTrueTile(flickDuration);
+            parentTransform.GetChild(i).gameObject.GetComponent<Tile>()?.FlickerTile(flickDuration);
+        }
+    }
+
+    // Reset trigger state of all tiles on the board
+    public void ResetBoard()
+    {
+        // todo: improve by create a list holding triggered tiles only!!!
+
+        if (!IsInitBoard) return;
+
+        Transform parentTransform = TileGroupTransform;
+
+        int total = parentTransform.childCount;
+        for (int i = 0; i < total; ++i)
+        {
+            parentTransform.GetChild(i).gameObject.GetComponent<Tile>()?.UntriggerTile();
         }
     }
 
@@ -95,9 +115,11 @@ public class BoardManager : MonoBehaviour
         MidPoint = new Vector3(_midbotBoardTransform.position.x, 0, _midbotBoardTransform.position.z + _colLength / 2);
     }
 
-    private void DistributeTiles(int numberedTileCount)
+    // Return number of special + numbered tiles
+    private int DistributeTiles(int numberedTileCount)
     {
-        int total = _rows * _columns;
+        // include both special and numbered tiles
+        int abnormalTileCount = numberedTileCount;
 
         for (int i = 0; i < _rows; ++i)
         {
@@ -135,6 +157,8 @@ public class BoardManager : MonoBehaviour
                         isSetAbnormalTile = true;
                         _tileMatrix[i, j] = TileType.Special;
 
+                        ++abnormalTileCount;
+
                         continue;
                     }
                 }
@@ -142,6 +166,8 @@ public class BoardManager : MonoBehaviour
                 _tileMatrix[i, j] = TileType.Normal;
             }
         }
+
+        return abnormalTileCount;
     }
 
     // Spawn tiles based on the previously distributed board (must call method DistributeTiles() before)

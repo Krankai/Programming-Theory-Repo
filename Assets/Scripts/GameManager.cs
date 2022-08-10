@@ -28,7 +28,7 @@ public class GameManager : MonoBehaviour
     [ContextMenu("Flick Board")]
     public void FlickBoard()
     {
-        _boardManager.FlickBoard(1.0f);
+        _boardManager.FlickerBoard(1.0f);
     }
 
     [ContextMenu("Clear Board")]
@@ -59,6 +59,11 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
+        DebugDetectMouseClick();
+    }
+
+    private void DebugDetectMouseClick()
+    {
         bool isLeftClick = Input.GetMouseButtonDown(0);
         if (isLeftClick || Input.GetMouseButtonDown(1))
         {
@@ -67,13 +72,18 @@ public class GameManager : MonoBehaviour
 
             if (Physics.Raycast(ray, out hit))
             {
-                if (hit.transform.CompareTag("SpecialTile"))
+                if (hit.transform.CompareTag("Tile"))
                 {
-                    SpecialTile tile = hit.transform.gameObject.GetComponent<SpecialTile>();
+                    Tile tileScript = hit.transform.gameObject.GetComponent<Tile>();
                     if (isLeftClick)
-                        tile.FlickTrueTile(1);
+                    {
+                        tileScript.FlickerTile(1);
+                    }
                     else
-                        tile.OnTriggered();
+                    {
+                        if (tileScript.IsTriggered) tileScript.UntriggerTile();
+                        else tileScript.TriggerTile();
+                    }
                 }
             }
         }

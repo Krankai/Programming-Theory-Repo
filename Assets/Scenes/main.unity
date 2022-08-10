@@ -475,8 +475,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca06a075033e1054faeed15b954015fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _boardManager: {fileID: 1022614458}
-  _playerPrefab: {fileID: 6165928529276134526, guid: 3a3e444a3616472449dd0f015cad8736, type: 3}
   _playerStartingHeight: 8
 --- !u!4 &1668571332
 Transform:
@@ -679,6 +677,7 @@ MonoBehaviour:
   _normalTilePrefab: {fileID: 616083413997286954, guid: ba484c280870ba047aadbb25b4110d63, type: 3}
   _specialTilePrefab: {fileID: 4028730484520420214, guid: 9a4ec67b65c1b84478f1a72c00203cd6, type: 3}
   _numberedTilePrefab: {fileID: 147573967288485881, guid: 9ed7a226b39bd1742b42a297299a86c5, type: 3}
+  _playerPrefab: {fileID: 6165928529276134526, guid: 3a3e444a3616472449dd0f015cad8736, type: 3}
 --- !u!4 &1972428804
 Transform:
   m_ObjectHideFlags: 0

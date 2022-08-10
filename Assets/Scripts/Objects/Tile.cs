@@ -6,15 +6,19 @@ public class Tile : MonoBehaviour
 {
     public Color TileColor { get; protected set; }
 
+    [SerializeField] private float minDistance = 3f;
+
     private bool _isTriggered;
 
     private bool _isFlickered;
 
     private BoxCollider _collider;
 
-    public bool IsFlickered() => _isFlickered;
+    public bool IsFlickered => _isFlickered;
 
-    public bool IsTriggered() => _isTriggered;
+    public bool IsTriggered => _isTriggered;
+
+    public bool IsNear(Vector3 comparePosition) => Vector3.Distance(comparePosition, transform.position) <= minDistance;
 
     public float GetSideLength()
     {
@@ -26,9 +30,9 @@ public class Tile : MonoBehaviour
         return _collider.size.x * transform.localScale.x;
     }
 
-    public void FlickTrueTile(float duration)
+    public void FlickerTile(float duration)
     {
-        if (IsTriggered()) return;
+        if (IsTriggered) return;
 
         float delay = 0.1f;
         Invoke("ShowTrueTile", delay);
@@ -38,16 +42,16 @@ public class Tile : MonoBehaviour
         StartCoroutine(SetFlickerStateCoroutine(false, delay + duration));
     }
 
-    public void OnTriggered()
+    public void TriggerTile()
     {
-        if (IsFlickered()) return;
+        if (IsFlickered || IsTriggered) return;
+        ShowTrueTile();
+    }
 
-        if (IsTriggered())
-            HideTrueTile();
-        else
-            ShowTrueTile();
-        
-        _isTriggered = !_isTriggered;
+    public void UntriggerTile()
+    {
+        if (IsFlickered || !IsTriggered) return;
+        HideTrueTile();
     }
 
     protected virtual void Awake()
@@ -66,18 +70,26 @@ public class Tile : MonoBehaviour
 
     protected virtual void ShowTrueTile()
     {
-        // Do nothing for base tile
+        _isTriggered = true;
     }
 
     protected virtual void HideTrueTile()
     {
-        // Do nothing for base tile
+        _isTriggered = false;
     }
 
     private IEnumerator SetFlickerStateCoroutine(bool state, float delay)
     {
         yield return new WaitForSeconds(delay);
         _isFlickered = state;
+    }
+
+    private void OnCollisionStay(Collision collisionInfo)
+    {
+        if (collisionInfo.gameObject.CompareTag("Player") && IsNear(collisionInfo.gameObject.transform.position))
+        {
+            TriggerTile();
+        }
     }
 }
 
