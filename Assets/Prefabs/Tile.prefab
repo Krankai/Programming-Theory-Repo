@@ -126,3 +126,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   minDistance: 3
+  _triggerEvent:
+    m_PersistentCalls:
+      m_Calls: []

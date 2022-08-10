@@ -1,12 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class Tile : MonoBehaviour
 {
     public Color TileColor { get; protected set; }
 
     [SerializeField] private float minDistance = 3f;
+
+    protected UnityEvent _triggerEvent;
 
     private bool _isTriggered;
 
@@ -46,6 +49,8 @@ public class Tile : MonoBehaviour
     {
         if (IsFlickered || IsTriggered) return;
         ShowTrueTile();
+
+        _triggerEvent?.Invoke();
     }
 
     public void UntriggerTile()
@@ -60,6 +65,8 @@ public class Tile : MonoBehaviour
         {
             _collider = GetComponent<BoxCollider>();
         }
+
+        _triggerEvent = new UnityEvent();
     }
 
     protected virtual void Start()

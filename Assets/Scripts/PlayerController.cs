@@ -10,6 +10,8 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] private float _maxSpeed = 10.0f;
 
+    [SerializeField] private float _speedModifier = 1.5f;
+
     [SerializeField] private float _accelerationRate = 1.0f;    // speed per second
 
     [SerializeField] private float _decelerationRate = 2.0f;    // speed per second
@@ -182,7 +184,7 @@ public class PlayerController : MonoBehaviour
             _currentSpeed = Mathf.Clamp(_currentSpeed + Time.deltaTime * _accelerationRate, _startingSpeed, _maxSpeed);
 
             Vector3 appliedForce = new Vector3(horizontalInput * Time.deltaTime * _currentSpeed, 0, verticalInput * Time.deltaTime * _currentSpeed);
-            _rigidBody.AddForce(appliedForce, ForceMode.VelocityChange);
+            _rigidBody.AddForce(appliedForce * _speedModifier, ForceMode.VelocityChange);
         }
     }
 }

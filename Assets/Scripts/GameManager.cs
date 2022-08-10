@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
+    public static GameManager Instance { get; private set; }
+
     [SerializeField] private float _playerStartingHeight = 8f;
 
     private BoardManager _boardManager;
@@ -11,6 +13,10 @@ public class GameManager : MonoBehaviour
     private SpawnManager _spawnManager;
 
     private Camera _camera;
+
+    private int _currentRound = 0;
+
+    private int _remainedTiles = 0;
 
     #region Helpers
     [ContextMenu("Generate Board 1")]
@@ -49,8 +55,22 @@ public class GameManager : MonoBehaviour
     }
     #endregion
 
+    public void UpdateRemainedTiles()
+    {
+        Debug.Log("Update remained tiles...");
+    }
+
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(this);
+        }
+        else
+        {
+            Instance = this;
+        }
+
         _boardManager = GameObject.Find("BoardManager").GetComponent<BoardManager>();
         _spawnManager = GameObject.Find("SpawnManager").GetComponent<SpawnManager>();
         

@@ -127,6 +127,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _startingSpeed: 5
   _maxSpeed: 10
+  _speedModifier: 1.5
   _accelerationRate: 1
   _decelerationRate: 2
   _decelerateWaitTime: 0.5
