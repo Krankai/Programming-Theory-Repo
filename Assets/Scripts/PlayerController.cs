@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public static PlayerController Instance { get; private set; }
-
     [SerializeField] private float _startingSpeed = 5.0f;
 
     [SerializeField] private float _maxSpeed = 10.0f;
@@ -42,15 +40,6 @@ public class PlayerController : MonoBehaviour
     {
         _meshRenderer = GetComponent<MeshRenderer>();
         _meshRenderer.enabled = false;
-
-        if (Instance != null && Instance != this)
-        {
-            Destroy(this.gameObject);
-        }
-        else
-        {
-            Instance = this;
-        }
 
         _rigidBody = GetComponent<Rigidbody>();
     }

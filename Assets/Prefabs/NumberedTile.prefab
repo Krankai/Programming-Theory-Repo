@@ -126,7 +126,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7fa4e7b327bce444e80baf69f83ef1b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minDistance: 3
+  minDistance: 1.2
   _numberText: {fileID: 147573967685845555}
   _orderNumber: 2
 --- !u!1 &147573967685845553

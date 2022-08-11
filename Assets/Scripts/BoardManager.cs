@@ -6,11 +6,17 @@ public class BoardManager : MonoBehaviour
 {
     public bool IsInitBoard { get; private set; }
 
-    public Vector3 MidPoint { get; private set; }
+    // public Vector3 MidPoint { get; private set; }
 
-    public float GetRowLength() => _rowLength;
+    // public float GetRowLength() => _rowLength;
 
-    public float GetColLength() => _colLength;
+    // public float GetColLength() => _colLength;
+
+    public float RowLength => _spawnManager.GetTileSideLength() * _rows;
+
+    public float ColLength => _spawnManager.GetTileSideLength() * _columns;
+
+    public Vector3 MidPoint => new Vector3(_midbotBoardTransform.position.x, 0, _midbotBoardTransform.position.z + ColLength / 2);
 
     [SerializeField] private int _rows;
 
@@ -28,11 +34,11 @@ public class BoardManager : MonoBehaviour
 
     private TileType[,] _tileMatrix;
 
-    private float _rowLength;
+    // private float _rowLength;
 
-    private float _colLength;
+    // private float _colLength;
 
-    private float _midpoint;
+    // private float _midpoint;
 
     private SpawnManager _spawnManager;
 
@@ -49,6 +55,22 @@ public class BoardManager : MonoBehaviour
         SetupBoundaries();
 
         IsInitBoard = true;
+    }
+
+    public void GenerateBoard(int numberedTileCount, int rows, int columns)
+    {
+        _rows = rows;
+        _columns = columns;
+
+        GenerateBoard(numberedTileCount);
+    }
+
+    public void GenerateBoard(int numberedTileCount, Vector2 size)
+    {
+        _rows = (int)size.x;
+        _columns = (int)size.y;
+
+        GenerateBoard(numberedTileCount);
     }
 
     public void ClearBoard()
@@ -97,7 +119,6 @@ public class BoardManager : MonoBehaviour
     private void Awake()
     {
         _spawnManager = GameObject.Find("SpawnManager").GetComponent<SpawnManager>();
-        _tileMatrix = new TileType[_rows, _columns];
     }
 
     private void OnValidate()
@@ -109,15 +130,17 @@ public class BoardManager : MonoBehaviour
     {
         IsInitBoard = false;
 
-        _rowLength = _spawnManager.GetTileSideLength() * _rows;
-        _colLength = _spawnManager.GetTileSideLength() * _columns;
+        // _rowLength = _spawnManager.GetTileSideLength() * _rows;
+        // _colLength = _spawnManager.GetTileSideLength() * _columns;
 
-        MidPoint = new Vector3(_midbotBoardTransform.position.x, 0, _midbotBoardTransform.position.z + _colLength / 2);
+        // MidPoint = new Vector3(_midbotBoardTransform.position.x, 0, _midbotBoardTransform.position.z + _colLength / 2);
     }
 
     // Return number of special + numbered tiles
     private int DistributeTiles(int numberedTileCount)
     {
+        _tileMatrix = new TileType[_rows, _columns];
+        
         // include both special and numbered tiles
         int abnormalTileCount = numberedTileCount;
 
@@ -174,7 +197,7 @@ public class BoardManager : MonoBehaviour
     private void SpawnTiles()
     {
         float tileSideLength = _spawnManager.GetTileSideLength();
-        Vector3 topLeftPosition = new Vector3(_midbotBoardTransform.position.x - _rowLength / 2f, 0f, _midbotBoardTransform.position.z + _colLength);
+        Vector3 topLeftPosition = new Vector3(_midbotBoardTransform.position.x - RowLength / 2f, 0f, _midbotBoardTransform.position.z + ColLength);
 
         // Spawning...
         for (int i = 0; i < _rows; ++i)
@@ -191,10 +214,13 @@ public class BoardManager : MonoBehaviour
     {
         Transform parent = _boundariesGroupObject ? _boundariesGroupObject.transform : transform;
 
-        CreateBoundary("TopBoundary", Boundary.Top, _rowLength, _colLength, parent);
-        CreateBoundary("BottomBoundary", Boundary.Bottom, _rowLength, _colLength, parent);
-        CreateBoundary("LeftBoundary", Boundary.Left, _rowLength, _colLength, parent);
-        CreateBoundary("RightBoundary", Boundary.Right, _rowLength, _colLength, parent);
+        float rowLength = RowLength;
+        float colLength = ColLength;
+
+        CreateBoundary("TopBoundary", Boundary.Top, rowLength, colLength, parent);
+        CreateBoundary("BottomBoundary", Boundary.Bottom, rowLength, colLength, parent);
+        CreateBoundary("LeftBoundary", Boundary.Left, rowLength, colLength, parent);
+        CreateBoundary("RightBoundary", Boundary.Right, rowLength, colLength, parent);
     }
 
     private void CreateBoundary(string name, Boundary type, float rowLength, float colLength, Transform parent)
