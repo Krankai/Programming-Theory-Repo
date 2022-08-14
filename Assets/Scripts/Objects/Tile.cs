@@ -7,7 +7,7 @@ public class Tile : MonoBehaviour
 {
     public Color TileColor { get; protected set; }
 
-    [SerializeField] private float minDistance = 1.2f;
+    [SerializeField] private float minDistance = 1.4f;
 
     protected UnityEvent _triggerEvent;
 
@@ -95,7 +95,6 @@ public class Tile : MonoBehaviour
     {
         if (collisionInfo.gameObject.CompareTag("Player") && IsNear(collisionInfo.gameObject.transform.position))
         {
-            Debug.Log("Distance: " + Vector3.Distance(collisionInfo.gameObject.transform.position, transform.position));
             TriggerTile();
         }
     }

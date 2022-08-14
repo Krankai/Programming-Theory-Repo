@@ -477,12 +477,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _playerStartingHeight: 8
   _rounds: []
-  _endOfRoundEvent:
+  _failEndOfRoundEvent:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1668571331}
         m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
-        m_MethodName: EndOfRound
+        m_MethodName: FailEndOfRound
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -492,6 +492,30 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  _succeedEndOfRoundEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1668571331}
+        m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
+        m_MethodName: SucceedEndOfRound
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  _countdownEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  _startRoundDelay: 2
+  _flickerDuration: 1
+  _countdownDuration: 3
+  _countdownDelayOffset: 1.5
+  _isAutoAdvance: 1
+  _advanceNextRoundDelay: 3
 --- !u!4 &1668571332
 Transform:
   m_ObjectHideFlags: 0

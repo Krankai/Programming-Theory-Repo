@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    public bool IsPlayable { get; set; }
+
     [SerializeField] private float _startingSpeed = 5.0f;
 
     [SerializeField] private float _maxSpeed = 10.0f;
@@ -57,6 +59,8 @@ public class PlayerController : MonoBehaviour
         _mouseStartPosition = _vectorZero;
 
         _meshRenderer.enabled = true;
+
+        IsPlayable = false;
     }
 
     private void FixedUpdate()
@@ -74,6 +78,8 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        if (!IsPlayable) return;
+
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
 

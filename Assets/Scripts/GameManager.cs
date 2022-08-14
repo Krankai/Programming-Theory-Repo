@@ -13,6 +13,7 @@ public class GameManager : MonoBehaviour
         public int _number;
         public int _timer;
         public Vector2 _boardSize;
+        public int _numberedTileCount;       // number of 'numbered tiles' on this round
     }
 
     public static GameManager Instance { get; private set; }
@@ -27,23 +28,43 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private Round[] _rounds;
 
-    [SerializeField] private UnityEvent _endOfRoundEvent;
+    [SerializeField] private UnityEvent _failEndOfRoundEvent;
+
+    [SerializeField] private UnityEvent _succeedEndOfRoundEvent;
 
     [SerializeField] private UnityEvent _countdownEvent;
+
+    [SerializeField] private float _startRoundDelay = 2.0f;
+
+    [SerializeField] private float _flickerDuration = 1.0f;
+
+    [SerializeField] private int _countdownDuration = 3;
+
+    [SerializeField] private float _countdownDelayOffset = 1.5f;
+
+    [SerializeField] private bool _isAutoAdvance = true;
+
+    [SerializeField] private float _advanceNextRoundDelay = 3.0f;
 
     private BoardManager _boardManager;
 
     private SpawnManager _spawnManager;
 
+    private PlayerController _playerController;
+
     private Camera _camera;
 
     private bool _isTimerOn;
 
+    private Vector2 _vector2Zero;
+
     private int GetTotalRounds() => _rounds.Length;
 
-    private int GetRoundTimer(int number) => _rounds[number - 1]._timer;
+    private int GetRoundTimer(int number) => number < _rounds.Length ? _rounds[number - 1]._timer : 0;
 
-    private Vector2 GetRoundBoardSize(int number) => _rounds[number - 1]._boardSize;
+    private Vector2 GetRoundBoardSize(int number) => number < _rounds.Length ? _rounds[number - 1]._boardSize : _vector2Zero;
+
+    private int GetRoundNumberedTiles(int number) => number < _rounds.Length ? _rounds[number - 1]._numberedTileCount : 0;
 
     #region Helpers
     [ContextMenu("Generate Board 1")]
@@ -73,7 +94,13 @@ public class GameManager : MonoBehaviour
     [ContextMenu("Start Round")]
     public void StartRoundHelper()
     {
-        StartNextRound(0);
+        StartNextRound();
+    }
+
+    [ContextMenu("Restart")]
+    public void RestartHelper()
+    {
+        Restart();
     }
     #endregion
 
@@ -91,41 +118,79 @@ public class GameManager : MonoBehaviour
         Vector3 spawnPosition = _boardManager.MidPoint;
         spawnPosition.y = _playerStartingHeight;
 
-        _spawnManager.SpawnPlayer(spawnPosition);
+        var playerObject = _spawnManager.SpawnPlayer(spawnPosition);
+        _playerController = playerObject?.GetComponent<PlayerController>();
     }
 
     public void UpdateRemainedTiles()
     {
-        Debug.Log("Update remained tiles...");
+        // Pre-update check
+        if (RemainedHiddenTiles <= 0)
+        {
+            Debug.LogWarning("No hidden tiles left...");
+            return;
+        }
+        else if (!_isTimerOn)
+        {
+            Debug.LogWarning("Out of time!!!");
+            return;
+        }
+
+        Debug.Log($"Update hidden tiles: {--RemainedHiddenTiles}");
+
+        // Post-udpate check
+        if (RemainedHiddenTiles <= 0)
+        {
+            _succeedEndOfRoundEvent.Invoke();
+            _isTimerOn = false;
+
+            Debug.Log($"Finish in {GetRoundTimer(CurrentRoundNumber) - CurrentTimer} seconds");
+            //CurrentTimer = 0;
+        }
     }
 
-    public void EndOfRound()
+    public void SucceedEndOfRound()
     {
-        Debug.Log("Time's up...");
+        Debug.Log("You succeed in passing this round. Congrats.");
+
+        if (_isAutoAdvance)
+        {
+            StartCoroutine(AdvanceRoundRoutine());
+        }
     }
 
-    public bool SetupRound(int hiddenTiles)
+    public void FailEndOfRound()
     {
-        RemainedHiddenTiles = hiddenTiles;
+        Debug.Log("Time's up. You fail to pass this round. Good luck next time.");
+    }
+
+    public bool SetupRound()
+    {
         if (++CurrentRoundNumber > GetTotalRounds()) return false;
 
-        Debug.Log($"Round {CurrentRoundNumber}");
         CurrentTimer = GetRoundTimer(CurrentRoundNumber);
-
-        _boardManager.GenerateBoard(0, GetRoundBoardSize(CurrentRoundNumber));
-
+        RemainedHiddenTiles = _boardManager.GenerateBoard(GetRoundNumberedTiles(CurrentRoundNumber), GetRoundBoardSize(CurrentRoundNumber));
         SpawnPlayer();
+
+        Debug.Log($"Round {CurrentRoundNumber}: {RemainedHiddenTiles} tiles");
 
         return true;
     }
 
-    public void StartNextRound(int hiddenTiles)
+    public void StartNextRound()
     {
-        if (!SetupRound(hiddenTiles)) return;
+        if (!SetupRound()) return;
 
-        const int countdownDuration = 3;
-        const float countdownDelay = 1.5f;
-        StartCoroutine(CountdownToStartRoutine(countdownDelay, countdownDuration, CurrentRoundNumber));
+        //const int countdownDuration = 3;
+        //const float countdownDelay = 1.5f;
+        //StartCoroutine(CountdownToStartRoutine(countdownDelay, countdownDuration, CurrentRoundNumber));
+        StartCoroutine(PreRoundProcessRoutine());
+    }
+
+    public void Restart()
+    {
+        CurrentRoundNumber = 0;
+        StartNextRound();
     }
 
     private void Awake()
@@ -154,6 +219,8 @@ public class GameManager : MonoBehaviour
         CurrentTimer = 0;
 
         _isTimerOn = false;
+
+        _vector2Zero = Vector2.zero;
     }
 
     private void Update()
@@ -163,12 +230,20 @@ public class GameManager : MonoBehaviour
         if (_isTimerOn)
         {
             CurrentTimer = Mathf.Clamp(CurrentTimer - Time.deltaTime, 0f, CurrentTimer);
-            Debug.Log("timer: " + CurrentTimer);
+            //Debug.Log("timer: " + CurrentTimer);
 
             if (CurrentTimer <= 0)
             {
                 _isTimerOn = false;
-                _endOfRoundEvent.Invoke();
+                _failEndOfRoundEvent.Invoke();
+            }
+            else if (CurrentTimer <= 10 && (CurrentTimer + Time.deltaTime) > 10)
+            {
+                Debug.Log("Less than 10 seconds left");
+            }
+            else if (CurrentTimer <= 5 && (CurrentTimer + Time.deltaTime) > 5)
+            {
+                Debug.Log("Less than 5 seconds left");
             }
         }
     }
@@ -203,7 +278,7 @@ public class GameManager : MonoBehaviour
     private void InitRoundInfo()
     {
         const int totalRounds = 5;
-        const int roundTimer = 10;
+        const int roundTimer = 15;
 
         Vector2 boardSize66 = new Vector2(6, 6);
         Vector2 boardSize88 = new Vector2(8, 8);
@@ -214,27 +289,48 @@ public class GameManager : MonoBehaviour
         {
             _rounds[i]._number = i + 1;
             _rounds[i]._timer = roundTimer;
-            _rounds[i]._boardSize = (i >= 3) ? boardSize88 : boardSize66;
+            _rounds[i]._boardSize = boardSize66;
+            _rounds[i]._numberedTileCount = 0;
+
+            if (i >= 3)
+            {
+                _rounds[i]._timer *= 2;
+                _rounds[i]._boardSize = boardSize88;
+                _rounds[i]._numberedTileCount = UnityEngine.Random.Range(1, 3);
+            }
         }
     }
 
-    private IEnumerator CountdownToStartRoutine(float delay, int duration, int roundNumber)
+    private IEnumerator PreRoundProcessRoutine()
     {
-        yield return new WaitForSeconds(delay);
+        yield return new WaitForSeconds(_startRoundDelay);
 
+        // Flickering time
+        _boardManager.FlickerBoard(_flickerDuration);
+
+        // Countdown to start
+        yield return new WaitForSeconds(_flickerDuration + _countdownDelayOffset);
+
+        int coundownDuration = _countdownDuration;
         do
         {
-            Debug.Log($"Start in {duration}...");
+            Debug.Log($"Start in {coundownDuration}...");
 
             _countdownEvent.Invoke();
             yield return new WaitForSeconds(1);
         }
-        while (--duration > 0);
+        while (--coundownDuration > 0);
+        Debug.Log("Start!");
 
+        _playerController.IsPlayable = true;
         _isTimerOn = true;
     }
 
-    // todo: implement scoring system (and check total time need to finish)
+    private IEnumerator AdvanceRoundRoutine()
+    {
+        Debug.Log($"Next round in {_advanceNextRoundDelay} seconds...");
+        yield return new WaitForSeconds(_advanceNextRoundDelay);
+
+        StartNextRound();
+    }
 }
-
-

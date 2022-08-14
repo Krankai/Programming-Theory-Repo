@@ -42,42 +42,54 @@ public class BoardManager : MonoBehaviour
 
     private SpawnManager _spawnManager;
 
-    public void GenerateBoard(int numberedTileCount)
+    public int GenerateBoard(int numberedTileCount)
     {
         if (IsInitBoard)
         {
             ClearBoard();
         }
 
-        DistributeTiles(numberedTileCount);
-        SpawnTiles();
+        int hiddenTiles = DistributeTiles(numberedTileCount);
+        SpawnTiles(hiddenTiles);
 
         SetupBoundaries();
 
         IsInitBoard = true;
+
+        return hiddenTiles;
     }
 
-    public void GenerateBoard(int numberedTileCount, int rows, int columns)
+    public int GenerateBoard(int numberedTileCount, int rows, int columns)
     {
         _rows = rows;
         _columns = columns;
 
-        GenerateBoard(numberedTileCount);
+        return GenerateBoard(numberedTileCount);
     }
 
-    public void GenerateBoard(int numberedTileCount, Vector2 size)
+    public int GenerateBoard(int numberedTileCount, Vector2 size)
     {
         _rows = (int)size.x;
         _columns = (int)size.y;
 
-        GenerateBoard(numberedTileCount);
+        return GenerateBoard(numberedTileCount);
     }
 
     public void ClearBoard()
     {
+        // Clear tiles
         Transform parentTransform = TileGroupTransform;
 
         int total = parentTransform.childCount;
+        for (int i = 0; i < total; ++i)
+        {
+            Destroy(parentTransform.GetChild(i).gameObject);
+        }
+
+        // Clear boundaries
+        parentTransform = BoundaryGroupTransform;
+
+        total = parentTransform.childCount;
         for (int i = 0; i < total; ++i)
         {
             Destroy(parentTransform.GetChild(i).gameObject);
@@ -194,12 +206,13 @@ public class BoardManager : MonoBehaviour
     }
 
     // Spawn tiles based on the previously distributed board (must call method DistributeTiles() before)
-    private void SpawnTiles()
+    private void SpawnTiles(int maxPossibleOrderNumber)
     {
         float tileSideLength = _spawnManager.GetTileSideLength();
         Vector3 topLeftPosition = new Vector3(_midbotBoardTransform.position.x - RowLength / 2f, 0f, _midbotBoardTransform.position.z + ColLength);
 
         // Spawning...
+        _spawnManager.InitOrderNumberPool(maxPossibleOrderNumber);
         for (int i = 0; i < _rows; ++i)
         {
             for (int j = 0; j < _columns; ++j)
