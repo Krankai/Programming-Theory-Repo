@@ -5,11 +5,15 @@ using UnityEngine.Events;
 
 public class Tile : MonoBehaviour
 {
+    public delegate void OnTriggerDelegate(GameObject tile);
+
+    public OnTriggerDelegate TriggerDelegate;
+
     public Color TileColor { get; protected set; }
 
     [SerializeField] private float minDistance = 1.4f;
 
-    protected UnityEvent _triggerEvent;
+    //protected UnityEvent _triggerEvent;
 
     private bool _isTriggered;
 
@@ -50,7 +54,11 @@ public class Tile : MonoBehaviour
         if (IsFlickered || IsTriggered) return;
         ShowTrueTile();
 
-        _triggerEvent?.Invoke();
+        //_triggerEvent?.Invoke();
+        if (TriggerDelegate != null)
+        {
+            TriggerDelegate(gameObject);
+        }
     }
 
     public void UntriggerTile()
@@ -66,7 +74,7 @@ public class Tile : MonoBehaviour
             _collider = GetComponent<BoxCollider>();
         }
 
-        _triggerEvent = new UnityEvent();
+        //_triggerEvent = new UnityEvent();
     }
 
     protected virtual void Start()

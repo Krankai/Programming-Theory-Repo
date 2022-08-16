@@ -34,13 +34,9 @@ public class BoardManager : MonoBehaviour
 
     private TileType[,] _tileMatrix;
 
-    // private float _rowLength;
-
-    // private float _colLength;
-
-    // private float _midpoint;
-
     private SpawnManager _spawnManager;
+
+    public List<GameObject> _triggerTileList;
 
     public int GenerateBoard(int numberedTileCount)
     {
@@ -86,6 +82,8 @@ public class BoardManager : MonoBehaviour
             Destroy(parentTransform.GetChild(i).gameObject);
         }
 
+        _triggerTileList.Clear();
+
         // Clear boundaries
         parentTransform = BoundaryGroupTransform;
 
@@ -99,7 +97,7 @@ public class BoardManager : MonoBehaviour
     }
 
     // Flick true state of all tiles on the board on for the special duration
-    public void FlickerBoard(float flickDuration)
+    public void FlickerBoard(float flickerDuration)
     {
         if (!IsInitBoard) return;
 
@@ -108,7 +106,7 @@ public class BoardManager : MonoBehaviour
         int total = parentTransform.childCount;
         for (int i = 0; i < total; ++i)
         {
-            parentTransform.GetChild(i).gameObject.GetComponent<Tile>()?.FlickerTile(flickDuration);
+            parentTransform.GetChild(i).gameObject.GetComponent<Tile>()?.FlickerTile(flickerDuration);
         }
     }
 
@@ -119,18 +117,30 @@ public class BoardManager : MonoBehaviour
 
         if (!IsInitBoard) return;
 
-        Transform parentTransform = TileGroupTransform;
+        // Transform parentTransform = TileGroupTransform;
 
-        int total = parentTransform.childCount;
-        for (int i = 0; i < total; ++i)
+        // int total = parentTransform.childCount;
+        // for (int i = 0; i < total; ++i)
+        // {
+        //     parentTransform.GetChild(i).gameObject.GetComponent<Tile>()?.UntriggerTile();
+        // }
+
+        foreach (GameObject tile in _triggerTileList)
         {
-            parentTransform.GetChild(i).gameObject.GetComponent<Tile>()?.UntriggerTile();
+            tile.GetComponent<Tile>()?.UntriggerTile();
         }
+    }
+
+    public void OnTriggerTile(GameObject tile)
+    {
+        //Debug.Log("add trigger tile to the list...");
+        _triggerTileList.Add(tile);
     }
 
     private void Awake()
     {
         _spawnManager = GameObject.Find("SpawnManager").GetComponent<SpawnManager>();
+        _triggerTileList = new List<GameObject>();
     }
 
     private void OnValidate()
@@ -141,11 +151,6 @@ public class BoardManager : MonoBehaviour
     private void Start()
     {
         IsInitBoard = false;
-
-        // _rowLength = _spawnManager.GetTileSideLength() * _rows;
-        // _colLength = _spawnManager.GetTileSideLength() * _columns;
-
-        // MidPoint = new Vector3(_midbotBoardTransform.position.x, 0, _midbotBoardTransform.position.z + _colLength / 2);
     }
 
     // Return number of special + numbered tiles
@@ -218,7 +223,7 @@ public class BoardManager : MonoBehaviour
             for (int j = 0; j < _columns; ++j)
             {
                 Vector3 spawnPosition = topLeftPosition + new Vector3((j + 0.5f) * tileSideLength, 0, -(0.5f + i) * tileSideLength);
-                _spawnManager.SpawnTile(_tileMatrix[i,j], spawnPosition, _tilesGroupObject ? _tilesGroupObject.transform : transform);
+                GameObject tile = _spawnManager.SpawnTile(_tileMatrix[i,j], spawnPosition, _tilesGroupObject ? _tilesGroupObject.transform : transform, OnTriggerTile);
             }
         }
     }

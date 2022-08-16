@@ -22,7 +22,7 @@ public class SpecialTile : Tile
         _baseColor = TileColor;
         TileColor = Color.red;
 
-        _triggerEvent.AddListener(GameManager.Instance.UpdateRemainedTiles);
+        //_triggerEvent.AddListener(GameManager.Instance.UpdateRemainedTiles);
     }
 
     protected override void ShowTrueTile()

@@ -20,7 +20,7 @@ public class SpawnManager : MonoBehaviour
 
     private int _maxOrderNumber;
 
-    public GameObject SpawnTile(TileType type, Vector3 spawnPosition, Transform parent)
+    public GameObject SpawnTile(TileType type, Vector3 spawnPosition, Transform parent, Tile.OnTriggerDelegate funcDelegate)
     {
         GameObject spawnPrefab = _normalTilePrefab;
         if (TileType.Special == type)
@@ -38,6 +38,12 @@ public class SpawnManager : MonoBehaviour
             //int orderNumber = Random.Range(1, maxPossibleOrderNumber + 1);
             //tileObject.GetComponent<NumberedTile>().OrderNumber = Random.Range(1, orderNumber);
             tileObject.GetComponent<NumberedTile>().OrderNumber = GetOrderNumberFromPool();
+        }
+
+        // Register delegate function
+        if (TileType.Special == type || TileType.Numbered == type)
+        {
+            tileObject.GetComponent<Tile>().TriggerDelegate += funcDelegate;
         }
 
         return tileObject;
