@@ -4,23 +4,23 @@ using UnityEngine;
 
 public class SpecialTile : Tile
 {
-    private Color _baseColor;
+    [SerializeField] protected Color _triggerColor = Color.red;
 
-    private Renderer _renderer;
+    //private Renderer _renderer;
 
     protected override void Awake()
     {
         base.Awake();
         
-        _renderer = GetComponent<Renderer>();
+        //_renderer = GetComponent<Renderer>();
     }
 
     protected override void Start()
     {
         base.Start();
 
-        _baseColor = TileColor;
-        TileColor = Color.red;
+        //_baseColor = TileColor;
+        //TileColor = Color.red;
 
         //_triggerEvent.AddListener(GameManager.Instance.UpdateRemainedTiles);
     }
@@ -29,13 +29,17 @@ public class SpecialTile : Tile
     {
         base.ShowTrueTile();
 
-        _renderer.material.color = TileColor;
+        //_renderer.material.color = TileColor;
+        TileColor = _triggerColor;
+        UpdateTileColor();
     }
 
     protected override void HideTrueTile()
     {
         base.HideTrueTile();
 
-        _renderer.material.color = _baseColor;
+        //_renderer.material.color = _baseColor;
+        TileColor = _baseColor;
+        UpdateTileColor();
     }
 }

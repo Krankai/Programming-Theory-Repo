@@ -41,7 +41,9 @@ public class BoardManager : MonoBehaviour
 
     private SpawnManager _spawnManager;
 
-    public List<GameObject> _triggerTileList;
+    private List<GameObject> _triggerTileList;
+
+    public int GetNumberTriggeredTiles() => _triggerTileList.Count;
 
     public int GenerateBoard(int numberedTileCount)
     {
@@ -123,15 +125,32 @@ public class BoardManager : MonoBehaviour
         StartCoroutine(ResetTilesCoroutine());
     }
 
-    public void OnTriggerTile(GameObject tile)
+    public void OnTriggerTile(GameObject tile, bool isValid)
     {
         _triggerTileList.Add(tile);
 
-        TileType triggerTileType = TileType.Normal;
-        if (!IsValidTrigger(tile, out triggerTileType))
+        // TileType type = TileType.Normal;
+        // if (!IsValidTrigger(tile, out type))
+        // {
+        //     Debug.Log("WRONG!!!");
+        //     ProcessFailTrigger(tile, type);
+        // }
+
+        if (!isValid)
         {
-            Debug.Log("WRONG!!!");
-            ProcessFailTrigger(triggerTileType);
+            Debug.Log("INVALID TRIGGER!!!");
+
+            TileType type = TileType.Normal;
+            if (tile.GetComponent<NumberedTile>() != null)
+            {
+                type = TileType.Numbered;
+            }
+            else if (tile.GetComponent<SpecialTile>() != null)
+            {
+                type = TileType.Special;
+            }
+
+            ProcessFailTrigger(tile, type);
         }
     }
 
@@ -293,30 +312,30 @@ public class BoardManager : MonoBehaviour
         boundaryObject.GetComponent<MeshRenderer>().enabled = false;
     }
 
-    private bool IsValidTrigger(GameObject triggerTile, out TileType tileType)
+    private bool IsValidTrigger(GameObject tile, out TileType type)
     {
-        tileType = TileType.Normal;
+        type = TileType.Normal;
 
-        Tile tileScript = triggerTile.GetComponent<NumberedTile>();
+        Tile tileScript = tile.GetComponent<NumberedTile>();
         if (tileScript != null)
         {
             bool isMatchingOrder = (tileScript as NumberedTile).OrderNumber == _triggerTileList.Count + 1;
-            tileType = TileType.Numbered;
+            type = TileType.Numbered;
 
             return isMatchingOrder;
         }
 
-        tileScript = triggerTile.GetComponent<SpecialTile>();
+        tileScript = tile.GetComponent<SpecialTile>();
         if (tileScript != null) 
         {
-            tileType = TileType.Special;
+            type = TileType.Special;
             return true;
         }
 
         return false;
     }
 
-    private void ProcessFailTrigger(TileType type)
+    private void ProcessFailTrigger(GameObject tile, TileType type)
     {
         switch (type)
         {

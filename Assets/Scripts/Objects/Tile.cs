@@ -5,13 +5,17 @@ using UnityEngine.Events;
 
 public class Tile : MonoBehaviour
 {
-    public delegate void OnTriggerDelegate(GameObject tile);
+    public delegate void OnTriggerDelegate(GameObject tile, bool isValid);
 
     public OnTriggerDelegate TriggerDelegate;
 
     public Color TileColor { get; protected set; }
 
-    [SerializeField] private float minDistance = 1.4f;
+    [SerializeField] protected Color _baseColor = Color.white;
+
+    [SerializeField] private float _minDistance = 1.4f;
+
+    [SerializeField] private float _flickerDelay = 0.1f;
 
     //protected UnityEvent _triggerEvent;
 
@@ -19,13 +23,17 @@ public class Tile : MonoBehaviour
 
     private bool _isFlickered;
 
+    private bool _isAcceptTrigger;
+
     private BoxCollider _collider;
+
+    private Renderer _renderer;
 
     public bool IsFlickered => _isFlickered;
 
     public bool IsTriggered => _isTriggered;
 
-    public bool IsNear(Vector3 comparePosition) => Vector3.Distance(comparePosition, transform.position) <= minDistance;
+    public bool IsNear(Vector3 comparePosition) => Vector3.Distance(comparePosition, transform.position) <= _minDistance;
 
     public float GetSideLength()
     {
@@ -41,21 +49,21 @@ public class Tile : MonoBehaviour
     {
         if (IsTriggered) return;
 
-        float delay = 0.1f;
-        Invoke("ShowTrueTile", delay);
-        Invoke("HideTrueTile", delay + duration);
-
         _isFlickered = true;
-        StartCoroutine(SetFlickerStateCoroutine(false, delay + duration));
+
+        Invoke("ShowTrueTile", _flickerDelay);
+        Invoke("HideTrueTile", _flickerDelay + duration);
+
+        StartCoroutine(SetFlickerStateCoroutine(false, _flickerDelay + duration));
     }
 
-    public void TriggerTile()
+    public virtual void TriggerTile()
     {
         if (IsFlickered || IsTriggered) return;
         ShowTrueTile();
 
         //_triggerEvent?.Invoke();
-        TriggerDelegate?.Invoke(gameObject);
+        TriggerDelegate?.Invoke(gameObject, true);
     }
 
     public void UntriggerTile()
@@ -71,23 +79,36 @@ public class Tile : MonoBehaviour
             _collider = GetComponent<BoxCollider>();
         }
 
+        _renderer = GetComponent<Renderer>();
+
         //_triggerEvent = new UnityEvent();
     }
 
     protected virtual void Start()
     {
-        TileColor = Color.white;
+        TileColor = _baseColor;
+        UpdateTileColor();
+
+        _isFlickered = false;
         _isTriggered = false;
+        _isAcceptTrigger = true;
     }
 
     protected virtual void ShowTrueTile()
     {
         _isTriggered = true;
+        _isAcceptTrigger = false;
     }
 
     protected virtual void HideTrueTile()
     {
         _isTriggered = false;
+        _isAcceptTrigger = true;
+    }
+
+    protected void UpdateTileColor()
+    {
+        _renderer.material.color = TileColor;
     }
 
     private IEnumerator SetFlickerStateCoroutine(bool state, float delay)
@@ -96,11 +117,19 @@ public class Tile : MonoBehaviour
         _isFlickered = state;
     }
 
-    private void OnCollisionStay(Collision collisionInfo)
+    private void OnCollisionStay(Collision collision)
     {
-        if (collisionInfo.gameObject.CompareTag("Player") && IsNear(collisionInfo.gameObject.transform.position))
+        if (_isAcceptTrigger && collision.gameObject.CompareTag("Player") && IsNear(collision.gameObject.transform.position))
         {
             TriggerTile();
+        }
+    }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            _isAcceptTrigger = true;
         }
     }
 }

@@ -60,6 +60,8 @@ public class GameManager : MonoBehaviour
 
     private int _cachedHiddenTiles;
 
+    public int GetNumberTriggeredTiles() => _boardManager.GetNumberTriggeredTiles();
+
     private int GetTotalRounds() => _rounds.Length;
 
     private int GetRoundTimer(int number) => number < _rounds.Length ? _rounds[number - 1]._timer : 0;
@@ -124,9 +126,9 @@ public class GameManager : MonoBehaviour
         _playerController = playerObject?.GetComponent<PlayerController>();
     }
 
-    public void UpdateRemainedTiles(GameObject tile)
+    public void UpdateRemainedTiles(GameObject tile, bool isValid)
     {
-        if (tile.GetComponent<SpecialTile>() == null) return;
+        if (!isValid || tile.GetComponent<SpecialTile>() == null) return;
 
         // Pre-update check
         if (RemainedHiddenTiles <= 0)
