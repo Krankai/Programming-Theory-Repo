@@ -280,6 +280,8 @@ MonoBehaviour:
   _midbotBoardTransform: {fileID: 279788398}
   _tilesGroupObject: {fileID: 1679985120}
   _boundariesGroupObject: {fileID: 1958937375}
+  _delayResetTiles: 0.5
+  _triggerTileList: []
 --- !u!4 &1022614459
 Transform:
   m_ObjectHideFlags: 0

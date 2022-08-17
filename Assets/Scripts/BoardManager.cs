@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class BoardManager : MonoBehaviour
 {
@@ -27,6 +28,10 @@ public class BoardManager : MonoBehaviour
     [SerializeField] private GameObject _tilesGroupObject;
 
     [SerializeField] private GameObject _boundariesGroupObject;
+
+    [SerializeField] private float _delayResetTiles = 0.5f;
+
+    [SerializeField] private UnityEvent _resetTileEvent;
 
     private Transform TileGroupTransform => _tilesGroupObject ? _tilesGroupObject.transform : transform;
 
@@ -111,30 +116,23 @@ public class BoardManager : MonoBehaviour
     }
 
     // Reset trigger state of all tiles on the board
-    public void ResetBoard()
+    public void ResetTriggerTiles()
     {
-        // todo: improve by create a list holding triggered tiles only!!!
-
         if (!IsInitBoard) return;
 
-        // Transform parentTransform = TileGroupTransform;
-
-        // int total = parentTransform.childCount;
-        // for (int i = 0; i < total; ++i)
-        // {
-        //     parentTransform.GetChild(i).gameObject.GetComponent<Tile>()?.UntriggerTile();
-        // }
-
-        foreach (GameObject tile in _triggerTileList)
-        {
-            tile.GetComponent<Tile>()?.UntriggerTile();
-        }
+        StartCoroutine(ResetTilesCoroutine());
     }
 
     public void OnTriggerTile(GameObject tile)
     {
-        //Debug.Log("add trigger tile to the list...");
         _triggerTileList.Add(tile);
+
+        TileType triggerTileType = TileType.Normal;
+        if (!IsValidTrigger(tile, out triggerTileType))
+        {
+            Debug.Log("WRONG!!!");
+            ProcessFailTrigger(triggerTileType);
+        }
     }
 
     private void Awake()
@@ -222,8 +220,19 @@ public class BoardManager : MonoBehaviour
         {
             for (int j = 0; j < _columns; ++j)
             {
+                TileType type = _tileMatrix[i,j];
+
                 Vector3 spawnPosition = topLeftPosition + new Vector3((j + 0.5f) * tileSideLength, 0, -(0.5f + i) * tileSideLength);
-                GameObject tile = _spawnManager.SpawnTile(_tileMatrix[i,j], spawnPosition, _tilesGroupObject ? _tilesGroupObject.transform : transform, OnTriggerTile);
+                GameObject tile = _spawnManager.SpawnTile(type, spawnPosition, _tilesGroupObject ? _tilesGroupObject.transform : transform);
+
+                // Register delegate function
+                if (TileType.Special == type || TileType.Numbered == type)
+                {
+                    Tile script = tile.GetComponent<Tile>();
+
+                    script.TriggerDelegate += OnTriggerTile;
+                    script.TriggerDelegate += GameManager.Instance.UpdateRemainedTiles;
+                }
             }
         }
     }
@@ -282,6 +291,56 @@ public class BoardManager : MonoBehaviour
 
         // disable MeshRender (to not appear visually in game scene)
         boundaryObject.GetComponent<MeshRenderer>().enabled = false;
+    }
+
+    private bool IsValidTrigger(GameObject triggerTile, out TileType tileType)
+    {
+        tileType = TileType.Normal;
+
+        Tile tileScript = triggerTile.GetComponent<NumberedTile>();
+        if (tileScript != null)
+        {
+            bool isMatchingOrder = (tileScript as NumberedTile).OrderNumber == _triggerTileList.Count + 1;
+            tileType = TileType.Numbered;
+
+            return isMatchingOrder;
+        }
+
+        tileScript = triggerTile.GetComponent<SpecialTile>();
+        if (tileScript != null) 
+        {
+            tileType = TileType.Special;
+            return true;
+        }
+
+        return false;
+    }
+
+    private void ProcessFailTrigger(TileType type)
+    {
+        switch (type)
+        {
+            case TileType.Normal:
+            case TileType.Special:
+                break;
+            case TileType.Numbered:
+                ResetTriggerTiles();
+                break;
+        }
+    }
+
+    private IEnumerator ResetTilesCoroutine()
+    {
+        yield return new WaitForSeconds(_delayResetTiles);
+
+        // Reset
+        foreach (GameObject tile in _triggerTileList)
+        {
+            tile.GetComponent<Tile>()?.UntriggerTile();
+        }
+
+        _triggerTileList.Clear();
+        _resetTileEvent?.Invoke();
     }
 }
 

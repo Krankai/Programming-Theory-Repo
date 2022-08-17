@@ -55,10 +55,7 @@ public class Tile : MonoBehaviour
         ShowTrueTile();
 
         //_triggerEvent?.Invoke();
-        if (TriggerDelegate != null)
-        {
-            TriggerDelegate(gameObject);
-        }
+        TriggerDelegate?.Invoke(gameObject);
     }
 
     public void UntriggerTile()

@@ -58,6 +58,8 @@ public class GameManager : MonoBehaviour
 
     private Vector2 _vector2Zero;
 
+    private int _cachedHiddenTiles;
+
     private int GetTotalRounds() => _rounds.Length;
 
     private int GetRoundTimer(int number) => number < _rounds.Length ? _rounds[number - 1]._timer : 0;
@@ -122,8 +124,10 @@ public class GameManager : MonoBehaviour
         _playerController = playerObject?.GetComponent<PlayerController>();
     }
 
-    public void UpdateRemainedTiles()
+    public void UpdateRemainedTiles(GameObject tile)
     {
+        if (tile.GetComponent<SpecialTile>() == null) return;
+
         // Pre-update check
         if (RemainedHiddenTiles <= 0)
         {
@@ -149,6 +153,12 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void ResetRemainedTiles()
+    {
+        RemainedHiddenTiles = _cachedHiddenTiles;
+        Debug.Log($"Reset! Remained tiles: {RemainedHiddenTiles}");
+    }
+
     public void SucceedEndOfRound()
     {
         Debug.Log("You succeed in passing this round. Congrats.");
@@ -170,6 +180,7 @@ public class GameManager : MonoBehaviour
 
         CurrentTimer = GetRoundTimer(CurrentRoundNumber);
         RemainedHiddenTiles = _boardManager.GenerateBoard(GetRoundNumberedTiles(CurrentRoundNumber), GetRoundBoardSize(CurrentRoundNumber));
+        _cachedHiddenTiles = RemainedHiddenTiles;
         SpawnPlayer();
 
         Debug.Log($"Round {CurrentRoundNumber}: {RemainedHiddenTiles} tiles");
@@ -290,7 +301,7 @@ public class GameManager : MonoBehaviour
             _rounds[i]._number = i + 1;
             _rounds[i]._timer = roundTimer;
             _rounds[i]._boardSize = boardSize66;
-            _rounds[i]._numberedTileCount = 0;
+            _rounds[i]._numberedTileCount = 1;
 
             if (i >= 3)
             {
