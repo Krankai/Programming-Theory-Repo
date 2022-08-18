@@ -108,9 +108,11 @@ public class GameManager : MonoBehaviour
     }
     #endregion
 
+    [ContextMenu("Spawn Player")]
     public void SpawnPlayer()
     {
-        if (!_boardManager.IsInitBoard) return;
+        // !!! temporarily disable to test player controller
+        //if (!_boardManager.IsInitBoard) return;
 
         // Destroy current player to spawn new
         var playerScript = GameObject.FindObjectOfType<PlayerController>();
@@ -303,7 +305,7 @@ public class GameManager : MonoBehaviour
             _rounds[i]._number = i + 1;
             _rounds[i]._timer = roundTimer;
             _rounds[i]._boardSize = boardSize66;
-            _rounds[i]._numberedTileCount = 1;
+            _rounds[i]._numberedTileCount = 0;
 
             if (i >= 3)
             {

@@ -129,13 +129,6 @@ public class BoardManager : MonoBehaviour
     {
         _triggerTileList.Add(tile);
 
-        // TileType type = TileType.Normal;
-        // if (!IsValidTrigger(tile, out type))
-        // {
-        //     Debug.Log("WRONG!!!");
-        //     ProcessFailTrigger(tile, type);
-        // }
-
         if (!isValid)
         {
             Debug.Log("INVALID TRIGGER!!!");

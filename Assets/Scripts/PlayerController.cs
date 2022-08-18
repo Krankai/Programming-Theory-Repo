@@ -18,6 +18,10 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] private float _decelerateWaitTime = 0.5f;  // waiting time for the current speed to be reset (after no input from users)
 
+    [SerializeField] private float _mouseSensitivity = 0.005f;
+
+    [SerializeField] private float _updateAnchorMouseClickWaitTime = 2f;      // time required before new 'anchor' mouse click is updated
+
     //private bool isTouchDevice;
 
     private float _currentSpeed;
@@ -28,9 +32,19 @@ public class PlayerController : MonoBehaviour
 
     private bool _isMouseDragged;
 
+    private bool _isMouseIdle;
+
+    private bool _isMouseFinishCountdown;       // finish countdown to update new anchor (?)
+
     private bool _isGrounded;
 
-    private Vector3 _mouseStartPosition;
+    private float _mouseTimer;
+
+    private Vector3 _anchorMousePosition;
+
+    private Vector3 _lastMousePosition;
+
+    private Vector2 _cacheMouseInput;      // x: horizontal, y: vertical
 
     private Rigidbody _rigidBody;
 
@@ -44,6 +58,8 @@ public class PlayerController : MonoBehaviour
         _meshRenderer.enabled = false;
 
         _rigidBody = GetComponent<Rigidbody>();
+
+        _cacheMouseInput = new Vector2();
     }
 
     private void Start()
@@ -53,14 +69,17 @@ public class PlayerController : MonoBehaviour
         _currentSpeed = _startingSpeed;
         _decelerateFlag = false;
         _decelerateTiming = _decelerateWaitTime;
+
         _isMouseDragged = false;
+        _isMouseIdle = true;
+        _isMouseFinishCountdown = false;
         _isGrounded = false;
 
-        _mouseStartPosition = _vectorZero;
+        _anchorMousePosition = _vectorZero;
 
         _meshRenderer.enabled = true;
 
-        IsPlayable = false;
+        IsPlayable = true;      // !!! switch to false later after finish testing player controller
     }
 
     private void FixedUpdate()
@@ -87,17 +106,13 @@ public class PlayerController : MonoBehaviour
         {
             ProcessMouseInput(ref horizontalInput, ref verticalInput);
         }
-        
+
         ProcessMovement(horizontalInput, verticalInput);
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            _isGrounded = true;
-        }
-        else if (/*collision.gameObject.GetComponent<Tile>()*/collision.gameObject.CompareTag("Tile"))
+        if (collision.gameObject.CompareTag("Ground") || collision.gameObject.CompareTag("Tile"))
         {
             _isGrounded = true;
         }
@@ -109,7 +124,7 @@ public class PlayerController : MonoBehaviour
         {
             if (!_isMouseDragged)
             {
-                _mouseStartPosition = Input.mousePosition;
+                _anchorMousePosition = _lastMousePosition = Input.mousePosition;
             }
             _isMouseDragged = true;
         }
@@ -122,33 +137,40 @@ public class PlayerController : MonoBehaviour
         {
             Vector3 currentMousePosition = Input.mousePosition;
 
-            horizontalInput = GetMouseHorizontalInput(currentMousePosition);
-            verticalInput = GetMouseVerticalInput(currentMousePosition);
+            UpdateAnchorMouseClick(currentMousePosition);
+            RestoreMouseInputs(ref horizontalInput, ref verticalInput, currentMousePosition);
         }
     }
 
-    private float GetMouseHorizontalInput(Vector3 currentMousePosition)
+    private float GetAxisMouseInput(string axis, Vector3 currentMousePosition)
     {
-        float minInputValue = -1f;
-        float maxInputValue = 1f;
+        float inputValueRange = 1f;
+        float axisDelta = 0f;
 
-        float horizontalDelta = currentMousePosition.x - _mouseStartPosition.x;
-        return Mathf.Clamp(horizontalDelta, minInputValue, maxInputValue);
+        if (axis.Equals("horizontal", System.StringComparison.OrdinalIgnoreCase))
+        {
+            axisDelta = currentMousePosition.x - _anchorMousePosition.x;
+        }
+        else if (axis.Equals("vertical", System.StringComparison.OrdinalIgnoreCase))
+        {
+            axisDelta = currentMousePosition.y - _anchorMousePosition.y;
+        }
+        
+        return Mathf.Clamp(axisDelta * _mouseSensitivity, -inputValueRange, inputValueRange);
     }
 
-    private float GetMouseVerticalInput(Vector3 currentMousePosition)
+    // Restore with cached values, or compute new
+    private void RestoreMouseInputs(ref float horizontalInput, ref float verticalInput, Vector3 currentMousePosition)
     {
-        float minInputValue = -1f;
-        float maxInputValue = 1f;
-
-        float verticalDelta = currentMousePosition.y - _mouseStartPosition.y;
-        return Mathf.Clamp(verticalDelta, minInputValue, maxInputValue);
+        horizontalInput = (_cacheMouseInput.x != 0) ? _cacheMouseInput.x : GetAxisMouseInput("horizontal", currentMousePosition);
+        verticalInput = (_cacheMouseInput.y != 0) ? _cacheMouseInput.y : GetAxisMouseInput("vertical", currentMousePosition);
     }
 
     private void ProcessMovement(float horizontalInput, float verticalInput)
     {
         bool receivedInput = (horizontalInput != 0 || verticalInput != 0);
 
+        // Set flag to decelerate if no inputs are received
         if (_currentSpeed > _startingSpeed)
         {
             if (!_decelerateFlag && !receivedInput)
@@ -162,6 +184,7 @@ public class PlayerController : MonoBehaviour
             }
         }
 
+        // Decelerate speed back to starting point gradually
         if (_decelerateFlag)
         {
             _decelerateTiming -= Time.deltaTime;
@@ -174,6 +197,7 @@ public class PlayerController : MonoBehaviour
             }
         }
 
+        // Apply force for movement only if there are inputs from user
         if (receivedInput)
         {
             _currentSpeed = Mathf.Clamp(_currentSpeed + Time.deltaTime * _accelerationRate, _startingSpeed, _maxSpeed);
@@ -181,5 +205,46 @@ public class PlayerController : MonoBehaviour
             Vector3 appliedForce = new Vector3(horizontalInput * Time.deltaTime * _currentSpeed, 0, verticalInput * Time.deltaTime * _currentSpeed);
             _rigidBody.AddForce(appliedForce * _speedModifier, ForceMode.VelocityChange);
         }
+    }
+
+    private void UpdateAnchorMouseClick(Vector3 currentMousePosition)
+    {
+        // Detect mouse idling state
+        float deltaMouse = Vector3.Distance(currentMousePosition, _lastMousePosition);
+        if (deltaMouse <= 1)
+        {
+            if (!_isMouseFinishCountdown)
+            {
+                _mouseTimer = (_mouseTimer > 0) ? _mouseTimer : _updateAnchorMouseClickWaitTime;
+            }
+            _isMouseIdle = true;
+        }
+        else
+        {
+            _mouseTimer = 0;
+
+            _isMouseIdle = false;
+            _isMouseFinishCountdown = false;
+
+            // Reset cached mouse input
+            _cacheMouseInput.x = _cacheMouseInput.y = 0;
+        }
+
+        // Countdown to update new anchor (when idle)
+        if (_isMouseIdle && !_isMouseFinishCountdown && _mouseTimer > 0)
+        {
+            _mouseTimer -= Time.deltaTime;
+            if (_mouseTimer <= 0)
+            {
+                // Cache mouse input so that "player" won't slow down after updating new anchor
+                _cacheMouseInput.x = GetAxisMouseInput("horizontal", currentMousePosition);
+                _cacheMouseInput.y = GetAxisMouseInput("vertical", currentMousePosition);
+
+                _anchorMousePosition = currentMousePosition;
+                _isMouseFinishCountdown = true;
+            }
+        }
+
+        _lastMousePosition = currentMousePosition;
     }
 }

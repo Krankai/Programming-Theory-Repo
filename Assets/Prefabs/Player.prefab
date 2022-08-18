@@ -91,7 +91,7 @@ SphereCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6165928529276134526}
-  m_Material: {fileID: 13400000, guid: 27221f700d636f744853e9fe34ba1ac4, type: 2}
+  m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
@@ -131,3 +131,9 @@ MonoBehaviour:
   _accelerationRate: 1
   _decelerationRate: 2
   _decelerateWaitTime: 0.5
+  _mouseSensitivity: 0.005
+  _updateAnchorMouseClickWaitTime: 2
+  _mouseTimer: 0
+  _mouseStartPosition: {x: 0, y: 0, z: 0}
+  _lastMousePosition: {x: 0, y: 0, z: 0}
+  _cacheMouseInput: {x: 0, y: 0}

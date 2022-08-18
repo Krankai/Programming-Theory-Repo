@@ -62,7 +62,6 @@ public class Tile : MonoBehaviour
         if (IsFlickered || IsTriggered) return;
 
         _isAcceptTrigger = false;
-        Debug.Log($"TriggerTile {this.name}:{this.GetInstanceID()} - {_isAcceptTrigger}");
         ShowTrueTile();
         TriggerDelegate?.Invoke(gameObject, IsValidTrigger());
     }
