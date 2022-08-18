@@ -17,13 +17,13 @@ public class NumberedTile : SpecialTile
         set { _orderNumber = value > 0 ? value : 1; }
     }
 
-    public override void TriggerTile()
-    {
-        if (IsFlickered || IsTriggered) return;
-        ShowTrueTile();
+    // public override void TriggerTile()
+    // {
+    //     if (IsFlickered || IsTriggered) return;
+    //     ShowTrueTile();
 
-        TriggerDelegate?.Invoke(gameObject, IsValidTrigger());
-    }
+    //     TriggerDelegate?.Invoke(gameObject, IsValidTrigger());
+    // }
 
     protected override void Start()
     {
@@ -52,7 +52,7 @@ public class NumberedTile : SpecialTile
         _numberText.text = "";
     }
 
-    private bool IsValidTrigger()
+    protected override bool IsValidTrigger()
     {
         return (_orderNumber == GameManager.Instance.GetNumberTriggeredTiles() + 1);
     }

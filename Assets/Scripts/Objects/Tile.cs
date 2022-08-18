@@ -60,10 +60,11 @@ public class Tile : MonoBehaviour
     public virtual void TriggerTile()
     {
         if (IsFlickered || IsTriggered) return;
-        ShowTrueTile();
 
-        //_triggerEvent?.Invoke();
-        TriggerDelegate?.Invoke(gameObject, true);
+        _isAcceptTrigger = false;
+        Debug.Log($"TriggerTile {this.name}:{this.GetInstanceID()} - {_isAcceptTrigger}");
+        ShowTrueTile();
+        TriggerDelegate?.Invoke(gameObject, IsValidTrigger());
     }
 
     public void UntriggerTile()
@@ -97,13 +98,11 @@ public class Tile : MonoBehaviour
     protected virtual void ShowTrueTile()
     {
         _isTriggered = true;
-        _isAcceptTrigger = false;
     }
 
     protected virtual void HideTrueTile()
     {
         _isTriggered = false;
-        _isAcceptTrigger = true;
     }
 
     protected void UpdateTileColor()
@@ -111,10 +110,9 @@ public class Tile : MonoBehaviour
         _renderer.material.color = TileColor;
     }
 
-    private IEnumerator SetFlickerStateCoroutine(bool state, float delay)
+    protected virtual bool IsValidTrigger()
     {
-        yield return new WaitForSeconds(delay);
-        _isFlickered = state;
+        return true;
     }
 
     private void OnCollisionStay(Collision collision)
@@ -131,6 +129,12 @@ public class Tile : MonoBehaviour
         {
             _isAcceptTrigger = true;
         }
+    }
+
+    private IEnumerator SetFlickerStateCoroutine(bool state, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        _isFlickered = state;
     }
 }
 
