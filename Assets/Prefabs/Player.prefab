@@ -132,8 +132,4 @@ MonoBehaviour:
   _decelerationRate: 2
   _decelerateWaitTime: 0.5
   _mouseSensitivity: 0.005
-  _updateAnchorMouseClickWaitTime: 2
-  _mouseTimer: 0
-  _mouseStartPosition: {x: 0, y: 0, z: 0}
-  _lastMousePosition: {x: 0, y: 0, z: 0}
-  _cacheMouseInput: {x: 0, y: 0}
+  _updateAnchorMouseClickWaitTime: 1
