@@ -55,7 +55,7 @@ public class SpawnManager : MonoBehaviour
         _maxOrderNumber = maxNumber;
         _orderNumberPool.Clear();
 
-        for (int i = 0; i <= _maxOrderNumber; ++i)
+        for (int i = 1; i <= _maxOrderNumber; ++i)
         {
             _orderNumberPool.Add(i);
         }

@@ -264,13 +264,14 @@ public class BoardManager : MonoBehaviour
 
     private void CreateBoundary(string name, Boundary type, float rowLength, float colLength, Transform parent)
     {
-        const float DepthScale = 5.0f;
+        const float DepthScale = 2.0f;
 
         bool isVerticalDirection = (type == Boundary.Top || type == Boundary.Bottom);
 
         GameObject boundaryObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
         boundaryObject.name = name;
         boundaryObject.transform.parent = parent;
+        boundaryObject.tag = "Boundary";
 
         // scale
         BoxCollider collider = boundaryObject.GetComponent<BoxCollider>();
@@ -299,7 +300,7 @@ public class BoardManager : MonoBehaviour
             zPosition -= colLength / 2 + boundaryObject.transform.localScale.z * collider.size.z / 2;
         }
 
-        boundaryObject.transform.position = new Vector3(xPosition, 0, zPosition);
+        boundaryObject.transform.position = new Vector3(xPosition, 1, zPosition);
 
         // disable MeshRender (to not appear visually in game scene)
         boundaryObject.GetComponent<MeshRenderer>().enabled = false;

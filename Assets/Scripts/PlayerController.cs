@@ -79,7 +79,7 @@ public class PlayerController : MonoBehaviour
 
         _meshRenderer.enabled = true;
 
-        IsPlayable = true;      // !!! switch to false later after finish testing player controller
+        IsPlayable = false;
     }
 
     private void FixedUpdate()
@@ -112,7 +112,7 @@ public class PlayerController : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Ground") || collision.gameObject.CompareTag("Tile"))
+        if (collision.gameObject.CompareTag("Ground") || collision.gameObject.CompareTag("Tile") || collision.gameObject.CompareTag("Boundary"))
         {
             _isGrounded = true;
         }

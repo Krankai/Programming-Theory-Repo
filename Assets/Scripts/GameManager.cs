@@ -24,6 +24,8 @@ public class GameManager : MonoBehaviour
 
     public float CurrentTimer { get; private set; }
 
+    public float CurrentScore { get; private set; }
+
     [SerializeField] private float _playerStartingHeight = 8f;
 
     [SerializeField] private Round[] _rounds;
@@ -31,6 +33,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] private UnityEvent _failEndOfRoundEvent;
 
     [SerializeField] private UnityEvent _succeedEndOfRoundEvent;
+
+    [SerializeField] private UnityEvent _timerEvent;
+
+    [SerializeField] private UnityEvent _scoreEvent;
 
     [SerializeField] private UnityEvent _countdownEvent;
 
@@ -111,8 +117,7 @@ public class GameManager : MonoBehaviour
     [ContextMenu("Spawn Player")]
     public void SpawnPlayer()
     {
-        // !!! temporarily disable to test player controller
-        //if (!_boardManager.IsInitBoard) return;
+        if (!_boardManager.IsInitBoard) return;
 
         // Destroy current player to spawn new
         var playerScript = GameObject.FindObjectOfType<PlayerController>();
@@ -149,11 +154,19 @@ public class GameManager : MonoBehaviour
         // Post-udpate check
         if (RemainedHiddenTiles <= 0)
         {
-            _succeedEndOfRoundEvent.Invoke();
             _isTimerOn = false;
 
+            Debug.Log("You succeed in passing this round. Congrats.");
             Debug.Log($"Finish in {GetRoundTimer(CurrentRoundNumber) - CurrentTimer} seconds");
-            //CurrentTimer = 0;
+
+            CurrentScore += CurrentTimer;
+            //_succeedEndOfRoundEvent.Invoke();
+            _scoreEvent.Invoke();
+
+            if (_isAutoAdvance)
+            {
+                StartCoroutine(AdvanceRoundRoutine());
+            }
         }
     }
 
@@ -161,16 +174,6 @@ public class GameManager : MonoBehaviour
     {
         RemainedHiddenTiles = _cachedHiddenTiles;
         Debug.Log($"Reset! Remained tiles: {RemainedHiddenTiles}");
-    }
-
-    public void SucceedEndOfRound()
-    {
-        Debug.Log("You succeed in passing this round. Congrats.");
-
-        if (_isAutoAdvance)
-        {
-            StartCoroutine(AdvanceRoundRoutine());
-        }
     }
 
     public void FailEndOfRound()
@@ -183,8 +186,11 @@ public class GameManager : MonoBehaviour
         if (++CurrentRoundNumber > GetTotalRounds()) return false;
 
         CurrentTimer = GetRoundTimer(CurrentRoundNumber);
+        _timerEvent.Invoke();
+
         RemainedHiddenTiles = _boardManager.GenerateBoard(GetRoundNumberedTiles(CurrentRoundNumber), GetRoundBoardSize(CurrentRoundNumber));
         _cachedHiddenTiles = RemainedHiddenTiles;
+
         SpawnPlayer();
 
         Debug.Log($"Round {CurrentRoundNumber}: {RemainedHiddenTiles} tiles");
@@ -195,16 +201,15 @@ public class GameManager : MonoBehaviour
     public void StartNextRound()
     {
         if (!SetupRound()) return;
-
-        //const int countdownDuration = 3;
-        //const float countdownDelay = 1.5f;
-        //StartCoroutine(CountdownToStartRoutine(countdownDelay, countdownDuration, CurrentRoundNumber));
         StartCoroutine(PreRoundProcessRoutine());
     }
 
     public void Restart()
     {
         CurrentRoundNumber = 0;
+        CurrentScore = 0;
+        _scoreEvent.Invoke();
+
         StartNextRound();
     }
 
@@ -221,7 +226,6 @@ public class GameManager : MonoBehaviour
 
         _boardManager = GameObject.Find("BoardManager").GetComponent<BoardManager>();
         _spawnManager = GameObject.Find("SpawnManager").GetComponent<SpawnManager>();
-        
         _camera = Camera.main;
     }
 
@@ -232,20 +236,20 @@ public class GameManager : MonoBehaviour
         CurrentRoundNumber = 0;
         RemainedHiddenTiles = 0;
         CurrentTimer = 0;
+        CurrentScore = 0;
 
         _isTimerOn = false;
-
         _vector2Zero = Vector2.zero;
     }
 
     private void Update()
     {
-        DebugDetectMouseClick();
+        //DebugDetectMouseClick();
 
         if (_isTimerOn)
         {
             CurrentTimer = Mathf.Clamp(CurrentTimer - Time.deltaTime, 0f, CurrentTimer);
-            //Debug.Log("timer: " + CurrentTimer);
+            _timerEvent.Invoke();
 
             if (CurrentTimer <= 0)
             {
