@@ -316,7 +316,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _timerText: {fileID: 953099051}
+  _timerNearEndColor: {r: 0.8301887, g: 0.105731584, b: 0.105731584, a: 1}
+  _timerFlickerFrequency: 3
   _scoreText: {fileID: 2072924608}
+  _scoreUpdateColor: {r: 0.3334995, g: 0.8113208, b: 0.095674604, a: 1}
+  _scoreFlickerFrequency: 1
+  _flickerDelay: 0.4
 --- !u!114 &417977598
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1156,6 +1161,21 @@ MonoBehaviour:
       - m_Target: {fileID: 417977597}
         m_TargetAssemblyTypeName: GameUIHandler, Assembly-CSharp
         m_MethodName: OnUpdateScore
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  _timerNearEndEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 417977597}
+        m_TargetAssemblyTypeName: GameUIHandler, Assembly-CSharp
+        m_MethodName: FlickerTimerNearEndColor
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

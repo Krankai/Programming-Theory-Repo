@@ -38,6 +38,8 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private UnityEvent _scoreEvent;
 
+    [SerializeField] private UnityEvent _timerNearEndEvent;
+
     [SerializeField] private UnityEvent _countdownEvent;
 
     [SerializeField] private float _startRoundDelay = 2.0f;
@@ -256,13 +258,10 @@ public class GameManager : MonoBehaviour
                 _isTimerOn = false;
                 _failEndOfRoundEvent.Invoke();
             }
-            else if (CurrentTimer <= 10 && (CurrentTimer + Time.deltaTime) > 10)
-            {
-                Debug.Log("Less than 10 seconds left");
-            }
             else if (CurrentTimer <= 5 && (CurrentTimer + Time.deltaTime) > 5)
             {
                 Debug.Log("Less than 5 seconds left");
+                _timerNearEndEvent.Invoke();
             }
         }
     }
