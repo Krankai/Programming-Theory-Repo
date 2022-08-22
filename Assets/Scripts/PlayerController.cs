@@ -20,7 +20,7 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] private float _mouseSensitivity = 0.005f;
 
-    [SerializeField] private float _updateAnchorMouseClickWaitTime = 2f;      // time required before new 'anchor' mouse click is updated
+    [SerializeField] private float _updateAnchorMouseClickWaitTime = 1f;      // time required before new 'anchor' mouse click is updated
 
     //private bool isTouchDevice;
 

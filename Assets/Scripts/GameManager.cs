@@ -22,17 +22,21 @@ public class GameManager : MonoBehaviour
 
     public int RemainedHiddenTiles { get; private set; }
 
-    public float CurrentTimer { get; private set; }
+    public float CurrentTimer { get; set; }     // !!! change to "private set" later
 
     public float CurrentScore { get; private set; }
+
+    public float LastRoundScore { get; private set; }
 
     [SerializeField] private float _playerStartingHeight = 8f;
 
     [SerializeField] private Round[] _rounds;
 
+    [SerializeField] private UnityEvent _initRoundEvent;
+
     [SerializeField] private UnityEvent _failEndOfRoundEvent;
 
-    [SerializeField] private UnityEvent _succeedEndOfRoundEvent;
+    //[SerializeField] private UnityEvent _succeedEndOfRoundEvent;
 
     [SerializeField] private UnityEvent _timerEvent;
 
@@ -40,7 +44,7 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private UnityEvent _timerNearEndEvent;
 
-    [SerializeField] private UnityEvent _countdownEvent;
+    //[SerializeField] private UnityEvent _countdownEvent;
 
     [SerializeField] private float _startRoundDelay = 2.0f;
 
@@ -48,15 +52,17 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private int _countdownDuration = 3;
 
-    [SerializeField] private float _countdownDelayOffset = 1.5f;
+    [SerializeField] private float _delayOffset = 1.5f;
 
     [SerializeField] private bool _isAutoAdvance = true;
 
-    [SerializeField] private float _advanceNextRoundDelay = 3.0f;
+    [SerializeField] private float _advanceNextRoundDelay = 2.0f;
 
     private BoardManager _boardManager;
 
     private SpawnManager _spawnManager;
+
+    private GameUIHandler _uiHandler;
 
     private PlayerController _playerController;
 
@@ -67,6 +73,8 @@ public class GameManager : MonoBehaviour
     private Vector2 _vector2Zero;
 
     private int _cachedHiddenTiles;
+
+    private WaitForSeconds _startRoundWaitTime;
 
     public int GetNumberTriggeredTiles() => _boardManager.GetNumberTriggeredTiles();
 
@@ -161,14 +169,16 @@ public class GameManager : MonoBehaviour
             Debug.Log("You succeed in passing this round. Congrats.");
             Debug.Log($"Finish in {GetRoundTimer(CurrentRoundNumber) - CurrentTimer} seconds");
 
+            LastRoundScore = CurrentScore;
             CurrentScore += CurrentTimer;
-            //_succeedEndOfRoundEvent.Invoke();
-            _scoreEvent.Invoke();
+            _uiHandler.ShowEndOfRoundUi();
 
-            if (_isAutoAdvance)
-            {
-                StartCoroutine(AdvanceRoundRoutine());
-            }
+            // _scoreEvent.Invoke();
+
+            // if (_isAutoAdvance)
+            // {
+            //     StartCoroutine(AdvanceRoundRoutine());
+            // }
         }
     }
 
@@ -186,6 +196,8 @@ public class GameManager : MonoBehaviour
     public bool SetupRound()
     {
         if (++CurrentRoundNumber > GetTotalRounds()) return false;
+
+        _initRoundEvent.Invoke();
 
         CurrentTimer = GetRoundTimer(CurrentRoundNumber);
         _timerEvent.Invoke();
@@ -209,10 +221,24 @@ public class GameManager : MonoBehaviour
     public void Restart()
     {
         CurrentRoundNumber = 0;
-        CurrentScore = 0;
+        LastRoundScore = CurrentScore = 0;
         _scoreEvent.Invoke();
 
         StartNextRound();
+    }
+
+    public void EnablePlayState()
+    {
+        _playerController.IsPlayable = true;
+        _isTimerOn = true;
+    }
+
+    public void ProcessEndOfRound()
+    {
+        if (_isAutoAdvance)
+        {
+            StartCoroutine(AdvanceRoundRoutine());
+        }
     }
 
     private void Awake()
@@ -228,6 +254,7 @@ public class GameManager : MonoBehaviour
 
         _boardManager = GameObject.Find("BoardManager").GetComponent<BoardManager>();
         _spawnManager = GameObject.Find("SpawnManager").GetComponent<SpawnManager>();
+        _uiHandler = GameObject.Find("Canvas").GetComponent<GameUIHandler>();
         _camera = Camera.main;
     }
 
@@ -238,10 +265,11 @@ public class GameManager : MonoBehaviour
         CurrentRoundNumber = 0;
         RemainedHiddenTiles = 0;
         CurrentTimer = 0;
-        CurrentScore = 0;
+        LastRoundScore = CurrentScore = 0;
 
         _isTimerOn = false;
         _vector2Zero = Vector2.zero;
+        _startRoundWaitTime = new WaitForSeconds(_startRoundDelay);
     }
 
     private void Update()
@@ -321,27 +349,19 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator PreRoundProcessRoutine()
     {
-        yield return new WaitForSeconds(_startRoundDelay);
+        yield return _startRoundWaitTime;
+
+        float duration = _uiHandler.ShowRoundUi(CurrentRoundNumber);
+        yield return new WaitForSeconds(duration + _delayOffset / 2);
 
         // Flickering time
         _boardManager.FlickerBoard(_flickerDuration);
 
         // Countdown to start
-        yield return new WaitForSeconds(_flickerDuration + _countdownDelayOffset);
+        yield return new WaitForSeconds(_flickerDuration + _delayOffset);
+        _uiHandler.ShowCountdownUi(_countdownDuration);
 
-        int coundownDuration = _countdownDuration;
-        do
-        {
-            Debug.Log($"Start in {coundownDuration}...");
-
-            _countdownEvent.Invoke();
-            yield return new WaitForSeconds(1);
-        }
-        while (--coundownDuration > 0);
-        Debug.Log("Start!");
-
-        _playerController.IsPlayable = true;
-        _isTimerOn = true;
+        // Note: playing state will be enabled by GameUIHandler when countdown-routine is done
     }
 
     private IEnumerator AdvanceRoundRoutine()
