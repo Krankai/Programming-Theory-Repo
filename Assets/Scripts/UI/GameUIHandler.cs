@@ -24,15 +24,19 @@ public class GameUIHandler : MonoBehaviour
 
     [SerializeField] private float _showRoundUiDuration = 1.0f;
 
-    [SerializeField] private Text _countdownText;
-
     [SerializeField] private Text _clearedText;
 
     [SerializeField] private float _hideClearUiDelay = 0.4f;
 
+    [SerializeField] private Text _countdownText;
+
     [SerializeField] private float _transitionStartDelay = 1.0f;
 
     [SerializeField] private float _transitionDuration = 1.0f;
+
+    [SerializeField] private GameObject _gameOverGroup;
+
+    [SerializeField] private Text _finalScoreText;
 
     [SerializeField] private UnityEvent _finishStartGameEvent;
 
@@ -143,6 +147,19 @@ public class GameUIHandler : MonoBehaviour
     {
         _clearedText.gameObject.SetActive(true);
         StartCoroutine(StartTransitionRoutine(GameManager.Instance.LastRoundScore, GameManager.Instance.CurrentScore, GameManager.Instance.CurrentTimer));
+    }
+
+    public void ShowGameOverScreen()
+    {
+        string scoreText = GameManager.Instance.CurrentScore.ToString("F2");
+
+        _finalScoreText.text = $"Final Score: {scoreText}";
+        _gameOverGroup.SetActive(true);
+    }
+
+    public void HideGameOverScreen()
+    {
+        _gameOverGroup.SetActive(false);
     }
 
     private void Awake()

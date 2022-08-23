@@ -131,5 +131,5 @@ MonoBehaviour:
   _accelerationRate: 1
   _decelerationRate: 2
   _decelerateWaitTime: 0.5
-  _mouseSensitivity: 0.005
+  _mouseSensitivity: 0.008
   _updateAnchorMouseClickWaitTime: 1

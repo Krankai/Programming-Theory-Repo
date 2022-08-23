@@ -18,7 +18,7 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] private float _decelerateWaitTime = 0.5f;  // waiting time for the current speed to be reset (after no input from users)
 
-    [SerializeField] private float _mouseSensitivity = 0.005f;
+    [SerializeField] private float _mouseSensitivity = 0.008f;
 
     [SerializeField] private float _updateAnchorMouseClickWaitTime = 1f;      // time required before new 'anchor' mouse click is updated
 

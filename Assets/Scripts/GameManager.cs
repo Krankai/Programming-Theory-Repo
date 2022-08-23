@@ -80,11 +80,11 @@ public class GameManager : MonoBehaviour
 
     private int GetTotalRounds() => _rounds.Length;
 
-    private int GetRoundTimer(int number) => number < _rounds.Length ? _rounds[number - 1]._timer : 0;
+    private int GetRoundTimer(int number) => (number >= 0 && number <= _rounds.Length) ? _rounds[number - 1]._timer : 0;
 
-    private Vector2 GetRoundBoardSize(int number) => number < _rounds.Length ? _rounds[number - 1]._boardSize : _vector2Zero;
+    private Vector2 GetRoundBoardSize(int number) => (number >= 0 && number <= _rounds.Length) ? _rounds[number - 1]._boardSize : _vector2Zero;
 
-    private int GetRoundNumberedTiles(int number) => number < _rounds.Length ? _rounds[number - 1]._numberedTileCount : 0;
+    private int GetRoundNumberedTiles(int number) => (number >= 0 && number <= _rounds.Length) ? _rounds[number - 1]._numberedTileCount : 0;
 
     #region Helpers
     [ContextMenu("Generate Board 1")]
@@ -233,6 +233,12 @@ public class GameManager : MonoBehaviour
         _isTimerOn = true;
     }
 
+    public void DisablePlayState()
+    {
+        _playerController.IsPlayable = false;
+        _isTimerOn = false;
+    }
+
     public void ProcessEndOfRound()
     {
         if (_isAutoAdvance)
@@ -283,8 +289,8 @@ public class GameManager : MonoBehaviour
 
             if (CurrentTimer <= 0)
             {
-                _isTimerOn = false;
-                _failEndOfRoundEvent.Invoke();
+                DisablePlayState();
+                _uiHandler.ShowGameOverScreen();
             }
             else if (CurrentTimer <= 5 && (CurrentTimer + Time.deltaTime) > 5)
             {
