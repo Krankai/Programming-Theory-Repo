@@ -13,7 +13,7 @@ public class TitleScreenUIHandler : MonoBehaviour
         DataManager.Instance.PlayerName = _nameInput.text;
     }
 
-    public void OnStartGame()
+    public void StartGame()
     {
         //Debug.Log("Start game with player's name: " + DataManager.Instance.PlayerName);
         SceneManager.LoadScene(1);
