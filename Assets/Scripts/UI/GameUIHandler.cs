@@ -70,6 +70,8 @@ public class GameUIHandler : MonoBehaviour
 
     private WaitForSeconds _hideClearUiWaitTime;
 
+    private GameOverUIHandler _gameOverUiHandler;
+
     private void UpdateTimerUi(float value) => _timerText.text = value.ToString("F2");
 
     private void UpdateScoreUi(float value) => _scoreText.text = value.ToString("F2");
@@ -149,23 +151,27 @@ public class GameUIHandler : MonoBehaviour
         StartCoroutine(StartTransitionRoutine(GameManager.Instance.LastRoundScore, GameManager.Instance.CurrentScore, GameManager.Instance.CurrentTimer));
     }
 
-    public void ShowGameOverScreen()
+    public void ShowGameOverScreen(bool isSuccess)
     {
         string scoreText = GameManager.Instance.CurrentScore.ToString("F2");
 
         _finalScoreText.text = $"Final Score: {scoreText}";
-        _gameOverGroup.SetActive(true);
+        //_gameOverGroup.SetActive(true);
+        _gameOverUiHandler.EnableUiWithSuccess(isSuccess);
     }
 
     public void HideGameOverScreen()
     {
-        _gameOverGroup.SetActive(false);
+        //_gameOverGroup.SetActive(false);
+        _gameOverUiHandler.DisableUi();
     }
 
     private void Awake()
     {
         _timerBaseColor = _timerText.color;
         _scoreBaseColor = _scoreText.color;
+
+        _gameOverUiHandler = _gameOverGroup.GetComponent<GameOverUIHandler>();
     }
 
     private void Start()

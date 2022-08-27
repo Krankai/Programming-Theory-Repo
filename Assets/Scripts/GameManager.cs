@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -227,6 +228,11 @@ public class GameManager : MonoBehaviour
         StartNextRound();
     }
 
+    public void BackToMenu()
+    {
+        SceneManager.LoadScene(0);
+    }
+
     public void EnablePlayState()
     {
         _playerController.IsPlayable = true;
@@ -290,7 +296,7 @@ public class GameManager : MonoBehaviour
             if (CurrentTimer <= 0)
             {
                 DisablePlayState();
-                _uiHandler.ShowGameOverScreen();
+                _uiHandler.ShowGameOverScreen(false);
             }
             else if (CurrentTimer <= 5 && (CurrentTimer + Time.deltaTime) > 5)
             {
@@ -329,7 +335,7 @@ public class GameManager : MonoBehaviour
 
     private void InitRoundInfo()
     {
-        const int totalRounds = 5;
+        const int totalRounds = 2;
         const int roundTimer = 15;
 
         Vector2 boardSize66 = new Vector2(6, 6);
@@ -375,6 +381,13 @@ public class GameManager : MonoBehaviour
         Debug.Log($"Next round in {_advanceNextRoundDelay} seconds...");
         yield return new WaitForSeconds(_advanceNextRoundDelay);
 
-        StartNextRound();
+        if (CurrentRoundNumber >= GetTotalRounds())
+        {
+            _uiHandler.ShowGameOverScreen(true);
+        }
+        else
+        {
+            StartNextRound();
+        }
     }
 }
