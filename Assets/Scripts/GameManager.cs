@@ -63,6 +63,8 @@ public class GameManager : MonoBehaviour
 
     private SpawnManager _spawnManager;
 
+    private AudioManager _audioManager;
+
     private GameUIHandler _uiHandler;
 
     private PlayerController _playerController;
@@ -266,6 +268,7 @@ public class GameManager : MonoBehaviour
 
         _boardManager = GameObject.Find("BoardManager").GetComponent<BoardManager>();
         _spawnManager = GameObject.Find("SpawnManager").GetComponent<SpawnManager>();
+        _audioManager = GameObject.Find("AudioManager").GetComponent<AudioManager>();
         _uiHandler = GameObject.Find("Canvas").GetComponent<GameUIHandler>();
         _camera = Camera.main;
     }
@@ -295,8 +298,10 @@ public class GameManager : MonoBehaviour
 
             if (CurrentTimer <= 0)
             {
+                // todo: use delefate to trigger function(s) needed for game over state!!!
                 DisablePlayState();
                 _uiHandler.ShowGameOverScreen(false);
+                _audioManager.ToggleBGM(false);
             }
             else if (CurrentTimer <= 5 && (CurrentTimer + Time.deltaTime) > 5)
             {
@@ -364,6 +369,7 @@ public class GameManager : MonoBehaviour
         yield return _startRoundWaitTime;
 
         float duration = _uiHandler.ShowRoundUi(CurrentRoundNumber);
+        _audioManager.PlayRoundSignal();
         yield return new WaitForSeconds(duration + _delayOffset / 2);
 
         // Flickering time
