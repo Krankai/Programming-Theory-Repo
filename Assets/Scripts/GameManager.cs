@@ -227,6 +227,8 @@ public class GameManager : MonoBehaviour
         LastRoundScore = CurrentScore = 0;
         _scoreEvent.Invoke();
 
+        _audioManager.ToggleBGM(true);
+
         StartNextRound();
     }
 
@@ -340,7 +342,7 @@ public class GameManager : MonoBehaviour
 
     private void InitRoundInfo()
     {
-        const int totalRounds = 2;
+        const int totalRounds = 1;
         const int roundTimer = 15;
 
         Vector2 boardSize66 = new Vector2(6, 6);
@@ -369,11 +371,12 @@ public class GameManager : MonoBehaviour
         yield return _startRoundWaitTime;
 
         float duration = _uiHandler.ShowRoundUi(CurrentRoundNumber);
-        _audioManager.PlayRoundSignal();
+        _audioManager.PlayRoundSignalAudio();
         yield return new WaitForSeconds(duration + _delayOffset / 2);
 
         // Flickering time
         _boardManager.FlickerBoard(_flickerDuration);
+        _audioManager.PlayFlickeringSignalAudio();
 
         // Countdown to start
         yield return new WaitForSeconds(_flickerDuration + _delayOffset);
@@ -390,6 +393,7 @@ public class GameManager : MonoBehaviour
         if (CurrentRoundNumber >= GetTotalRounds())
         {
             _uiHandler.ShowGameOverScreen(true);
+            _audioManager.ToggleBGM(false);
         }
         else
         {

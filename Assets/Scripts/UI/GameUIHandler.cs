@@ -42,6 +42,10 @@ public class GameUIHandler : MonoBehaviour
 
     [SerializeField] private UnityEvent _finishEndGameEvent;
 
+    [SerializeField] private UnityEvent _countdownStepEvent;
+
+    [SerializeField] private UnityEvent _countdownFinishEvent;
+
     private Color _timerBaseColor;
 
     private Color _scoreBaseColor;
@@ -240,10 +244,15 @@ public class GameUIHandler : MonoBehaviour
         _countdownText.gameObject.SetActive(true);
         for (int i = countdownDuration; i >= 1; --i)
         {
+            _countdownStepEvent.Invoke();
             _countdownText.text = $"{i}";
+
             yield return _countdownWaitTime;
         }
+
+        _countdownFinishEvent.Invoke();
         _countdownText.text = "Start";
+
         yield return _countdownWaitTime;
 
         _countdownText.gameObject.SetActive(false);
