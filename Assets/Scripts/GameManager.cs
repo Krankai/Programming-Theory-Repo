@@ -287,6 +287,8 @@ public class GameManager : MonoBehaviour
         _isTimerOn = false;
         _vector2Zero = Vector2.zero;
         _startRoundWaitTime = new WaitForSeconds(_startRoundDelay);
+
+        StartNextRound();
     }
 
     private void Update()
@@ -344,6 +346,7 @@ public class GameManager : MonoBehaviour
     {
         const int totalRounds = 1;
         const int roundTimer = 15;
+        const int complexRoundStartIndex = 3;
 
         Vector2 boardSize66 = new Vector2(6, 6);
         Vector2 boardSize88 = new Vector2(8, 8);
@@ -357,7 +360,7 @@ public class GameManager : MonoBehaviour
             _rounds[i]._boardSize = boardSize66;
             _rounds[i]._numberedTileCount = 0;
 
-            if (i >= 3)
+            if (i >= complexRoundStartIndex)
             {
                 _rounds[i]._timer *= 2;
                 _rounds[i]._boardSize = boardSize88;
@@ -376,7 +379,7 @@ public class GameManager : MonoBehaviour
 
         // Flickering time
         _boardManager.FlickerBoard(_flickerDuration);
-        _audioManager.PlayFlickeringSignalAudio();
+        _audioManager.PlayFlickerSignalAudio();
 
         // Countdown to start
         yield return new WaitForSeconds(_flickerDuration + _delayOffset);

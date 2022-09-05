@@ -17,8 +17,6 @@ public class Tile : MonoBehaviour
 
     [SerializeField] private float _flickerDelay = 0.1f;
 
-    //protected UnityEvent _triggerEvent;
-
     private bool _isTriggered;
 
     private bool _isFlickered;
@@ -64,6 +62,7 @@ public class Tile : MonoBehaviour
         _isAcceptTrigger = false;
         ShowTrueTile();
         TriggerDelegate?.Invoke(gameObject, IsValidTrigger());
+
     }
 
     public void UntriggerTile()

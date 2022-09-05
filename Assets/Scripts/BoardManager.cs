@@ -41,6 +41,8 @@ public class BoardManager : MonoBehaviour
 
     private SpawnManager _spawnManager;
 
+    private AudioManager _audioManager;
+
     private List<GameObject> _triggerTileList;
 
     public int GetNumberTriggeredTiles() => _triggerTileList.Count;
@@ -150,6 +152,7 @@ public class BoardManager : MonoBehaviour
     private void Awake()
     {
         _spawnManager = GameObject.Find("SpawnManager").GetComponent<SpawnManager>();
+        _audioManager = GameObject.Find("AudioManager").GetComponent<AudioManager>();
         _triggerTileList = new List<GameObject>();
     }
 
@@ -244,6 +247,7 @@ public class BoardManager : MonoBehaviour
 
                     script.TriggerDelegate += OnTriggerTile;
                     script.TriggerDelegate += GameManager.Instance.UpdateRemainedTiles;
+                    script.TriggerDelegate += _audioManager.OnPlayTriggerAudio;
                 }
             }
         }

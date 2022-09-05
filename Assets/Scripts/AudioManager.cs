@@ -6,11 +6,17 @@ public class AudioManager : MonoBehaviour
 {
     [SerializeField] private AudioSource _roundSignalAudio;
 
-    [SerializeField] private AudioSource _flickeringSignalAudio;
+    [SerializeField] private AudioSource _flickerSignalAudio;
+
+    [SerializeField] private AudioSource _triggerSuccessAudio;
+
+    [SerializeField] private AudioSource _triggerFailAudio;
 
     [SerializeField] private AudioSource _countdownAudio;
 
-    [SerializeField] private AudioSource _startAudio;
+    [SerializeField] private AudioSource _startRoundAudio;
+
+    [SerializeField] private AudioSource _clearRoundAudio;
 
     [SerializeField] private AudioSource _successGameOverAudio;
 
@@ -35,9 +41,31 @@ public class AudioManager : MonoBehaviour
         _roundSignalAudio.Play();
     }
 
-    public void PlayFlickeringSignalAudio()
+    public void PlayFlickerSignalAudio()
     {
-        _flickeringSignalAudio.Play();
+        _flickerSignalAudio.Play();
+    }
+
+    public void PlayTriggerSuccessAudio()
+    {
+        _triggerSuccessAudio.Play();
+    }
+
+    public void PlayTriggerFailAudio()
+    {
+        _triggerFailAudio.Play();
+    }
+
+    public void OnPlayTriggerAudio(GameObject tileObject, bool isValid)
+    {
+        if (isValid)
+        {
+            PlayTriggerSuccessAudio();
+        }
+        else
+        {
+            PlayTriggerFailAudio();
+        }
     }
 
     public void PlayCountdownAudio()
@@ -45,9 +73,14 @@ public class AudioManager : MonoBehaviour
         _countdownAudio.Play();
     }
 
-    public void PlayStartAudio()
+    public void PlayStartRoundAudio()
     {
-        _startAudio.Play();
+        _startRoundAudio.Play();
+    }
+
+    public void PlayClearRoundAudio()
+    {
+        _clearRoundAudio.Play();
     }
 
     public void PlaySuccessGameOverAudio()

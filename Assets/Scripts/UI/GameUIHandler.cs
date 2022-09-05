@@ -38,9 +38,11 @@ public class GameUIHandler : MonoBehaviour
 
     [SerializeField] private Text _finalScoreText;
 
-    [SerializeField] private UnityEvent _finishStartGameEvent;
+    [SerializeField] private UnityEvent _finishStartRoundEvent;
 
-    [SerializeField] private UnityEvent _finishEndGameEvent;
+    [SerializeField] private UnityEvent _showClearRoundEvent;
+
+    [SerializeField] private UnityEvent _finishEndRoundEvent;
 
     [SerializeField] private UnityEvent _countdownStepEvent;
 
@@ -152,6 +154,8 @@ public class GameUIHandler : MonoBehaviour
     public void ShowEndOfRoundUi()
     {
         _clearedText.gameObject.SetActive(true);
+        _showClearRoundEvent.Invoke();
+
         StartCoroutine(StartTransitionRoutine(GameManager.Instance.LastRoundScore, GameManager.Instance.CurrentScore, GameManager.Instance.CurrentTimer));
     }
 
@@ -257,7 +261,7 @@ public class GameUIHandler : MonoBehaviour
 
         _countdownText.gameObject.SetActive(false);
 
-        _finishStartGameEvent.Invoke();
+        _finishStartRoundEvent.Invoke();
     }
 
     private IEnumerator StartTransitionRoutine(float initialScore, float targetScore, float initialTimer)
@@ -271,6 +275,6 @@ public class GameUIHandler : MonoBehaviour
         yield return _hideClearUiWaitTime;
 
         HideClearUi();
-        _finishEndGameEvent.Invoke();
+        _finishEndRoundEvent.Invoke();
     }
 }

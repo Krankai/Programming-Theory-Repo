@@ -64,10 +64,6 @@ public class SpawnManager : MonoBehaviour
     private void Awake()
     {
         _tileScript = _normalTilePrefab.GetComponent<Tile>();
-    }
-
-    private void Start()
-    {
         _orderNumberPool = new List<int>();
     }
 
