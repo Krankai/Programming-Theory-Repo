@@ -8,6 +8,8 @@ public class TitleScreenUIHandler : MonoBehaviour
 {
     [SerializeField] private TMP_InputField _nameInput;
 
+    [SerializeField] private GameObject _tutorialPanel;
+
     public void OnNameInputValueChanged()
     {
         DataManager.Instance.PlayerName = _nameInput.text;
@@ -16,6 +18,21 @@ public class TitleScreenUIHandler : MonoBehaviour
     public void StartGame()
     {
         //Debug.Log("Start game with player's name: " + DataManager.Instance.PlayerName);
+        if (string.IsNullOrEmpty(DataManager.Instance.PlayerName))
+        {
+            DataManager.Instance.PlayerName = "Anonymous";
+        }
+
         SceneManager.LoadScene(1);
+    }
+
+    public void ShowTutorial()
+    {
+        _tutorialPanel.SetActive(true);
+    }
+
+    public void HideTutorial()
+    {
+        _tutorialPanel.SetActive(false);
     }
 }
