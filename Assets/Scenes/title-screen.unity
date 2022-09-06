@@ -1514,31 +1514,28 @@ MonoBehaviour:
     limit. The hidden pattern will be briefly shown at the start of each round, so
     make sure to remember them well.
 
-    
 
-    There are two (2) type of hidden
-    tiles to take note:
+    There are two (2) type of hidden tiles
+    to take note:
 
-    1. Red Tile = no special conditions required, run over
-    them as soon as possible
+    1. Red Tile = no special conditions required, run over them
+    as soon as possible
 
-    2. Number Tile = require to be ''triggered'' in
-    the correct order (e.g. tile with number 2 need to be triggered exactly after
-    the first one)
+    2. Number Tile = require to be ''triggered'' in the
+    correct order (e.g. tile with number 2 need to be triggered exactly after the
+    first one)
 
-    
 
-    Control you character with either keyboard or mouse
-    input:
+    Control you character with either keyboard or mouse input:
 
-    1. Arrow keys
+    1.
+    Arrow keys
 
     2. Hold left-mouse button and drag
 
-    
 
-    The
-    faster you get it all, the higher score you can get. So act quickly.
+    The faster you get it
+    all, the higher score you can get. So act quickly.
 
 '
   m_isRightToLeft: 0
@@ -1677,7 +1674,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1520765796
 RectTransform:
   m_ObjectHideFlags: 0
