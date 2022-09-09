@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.20741367, g: 0.745283, b: 0.6444125, a: 1}
-  m_SkyboxMaterial: {fileID: 2100000, guid: cc421da483ed06c49933077a621bff25, type: 2}
+  m_SkyboxMaterial: {fileID: 2100000, guid: f531e09e2ad2fb440b4eed7605863143, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.32107174, g: 0.21133253, b: 0.40438062, a: 1}
+  m_IndirectSpecularColor: {r: 0.084109284, g: 0.036746185, b: 0.13595921, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -338,8 +338,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 225175016}
-  - component: {fileID: 225175015}
   - component: {fileID: 225175014}
+  - component: {fileID: 225175015}
   m_Layer: 0
   m_Name: AudioManager
   m_TagString: Untagged
@@ -2901,7 +2901,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 1000
+  far clip plane: 22
   field of view: 60
   orthographic: 0
   orthographic size: 10
@@ -3126,27 +3126,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _playerStartingHeight: 8
   _rounds: []
+  _startRoundDelay: 2
+  _flickerDuration: 1
+  _countdownDuration: 3
+  _delayOffset: 1.5
+  _isAutoAdvance: 1
+  _advanceNextRoundDelay: 2
   _initRoundEvent:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 417977597}
         m_TargetAssemblyTypeName: GameUIHandler, Assembly-CSharp
         m_MethodName: Reset
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  _failEndOfRoundEvent:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1668571331}
-        m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
-        m_MethodName: FailEndOfRound
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3213,12 +3204,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  _startRoundDelay: 2
-  _flickerDuration: 1
-  _countdownDuration: 3
-  _delayOffset: 1.5
-  _isAutoAdvance: 1
-  _advanceNextRoundDelay: 2
 --- !u!4 &1668571332
 Transform:
   m_ObjectHideFlags: 0

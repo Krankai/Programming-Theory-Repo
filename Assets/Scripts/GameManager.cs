@@ -7,7 +7,6 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    // Timer for each round
     [Serializable]
     public struct Round
     {
@@ -23,7 +22,7 @@ public class GameManager : MonoBehaviour
 
     public int RemainedHiddenTiles { get; private set; }
 
-    public float CurrentTimer { get; set; }     // !!! change to "private set" later
+    public float CurrentTimer { get; set; }
 
     public float CurrentScore { get; private set; }
 
@@ -32,20 +31,6 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float _playerStartingHeight = 8f;
 
     [SerializeField] private Round[] _rounds;
-
-    [SerializeField] private UnityEvent _initRoundEvent;
-
-    [SerializeField] private UnityEvent _failEndOfRoundEvent;
-
-    //[SerializeField] private UnityEvent _succeedEndOfRoundEvent;
-
-    [SerializeField] private UnityEvent _timerEvent;
-
-    [SerializeField] private UnityEvent _scoreEvent;
-
-    [SerializeField] private UnityEvent _timerNearEndEvent;
-
-    //[SerializeField] private UnityEvent _countdownEvent;
 
     [SerializeField] private float _startRoundDelay = 2.0f;
 
@@ -59,6 +44,18 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private float _advanceNextRoundDelay = 2.0f;
 
+    [SerializeField] private UnityEvent _initRoundEvent;
+
+    [SerializeField] private UnityEvent _timerEvent;
+
+    [SerializeField] private UnityEvent _scoreEvent;
+
+    [SerializeField] private UnityEvent _timerNearEndEvent;
+
+    private bool _isTimerOn;
+
+    private int _cachedHiddenTiles;
+
     private BoardManager _boardManager;
 
     private SpawnManager _spawnManager;
@@ -71,11 +68,7 @@ public class GameManager : MonoBehaviour
 
     private Camera _camera;
 
-    private bool _isTimerOn;
-
     private Vector2 _vector2Zero;
-
-    private int _cachedHiddenTiles;
 
     private WaitForSeconds _startRoundWaitTime;
 
@@ -89,45 +82,6 @@ public class GameManager : MonoBehaviour
 
     private int GetRoundNumberedTiles(int number) => (number >= 0 && number <= _rounds.Length) ? _rounds[number - 1]._numberedTileCount : 0;
 
-    #region Helpers
-    [ContextMenu("Generate Board 1")]
-    public void GenerateBoardHelper1()
-    {
-        _boardManager.GenerateBoard(UnityEngine.Random.Range(0, 3));
-    }
-
-    [ContextMenu("Generate Board 2")]
-    public void GenerateBoardHelper2()
-    {
-        _boardManager.GenerateBoard(0);
-    }
-
-    [ContextMenu("Flick Board")]
-    public void FlickBoardHelper()
-    {
-        _boardManager.FlickerBoard(1.0f);
-    }
-
-    [ContextMenu("Clear Board")]
-    public void ClearBoardHelper()
-    {
-        _boardManager.ClearBoard();
-    }
-
-    [ContextMenu("Start Round")]
-    public void StartRoundHelper()
-    {
-        StartNextRound();
-    }
-
-    [ContextMenu("Restart")]
-    public void RestartHelper()
-    {
-        Restart();
-    }
-    #endregion
-
-    [ContextMenu("Spawn Player")]
     public void SpawnPlayer()
     {
         if (!_boardManager.IsInitBoard) return;
@@ -151,49 +105,28 @@ public class GameManager : MonoBehaviour
         if (!isValid || tile.GetComponent<SpecialTile>() == null) return;
 
         // Pre-update check
-        if (RemainedHiddenTiles <= 0)
+        if (RemainedHiddenTiles <= 0 || !_isTimerOn)
         {
-            Debug.LogWarning("No hidden tiles left...");
-            return;
-        }
-        else if (!_isTimerOn)
-        {
-            Debug.LogWarning("Out of time!!!");
             return;
         }
 
-        Debug.Log($"Update hidden tiles: {--RemainedHiddenTiles}");
+        --RemainedHiddenTiles;
 
         // Post-udpate check
         if (RemainedHiddenTiles <= 0)
         {
             _isTimerOn = false;
 
-            Debug.Log("You succeed in passing this round. Congrats.");
-            Debug.Log($"Finish in {GetRoundTimer(CurrentRoundNumber) - CurrentTimer} seconds");
-
             LastRoundScore = CurrentScore;
             CurrentScore += CurrentTimer;
+
             _uiHandler.ShowEndOfRoundUi();
-
-            // _scoreEvent.Invoke();
-
-            // if (_isAutoAdvance)
-            // {
-            //     StartCoroutine(AdvanceRoundRoutine());
-            // }
         }
     }
 
     public void ResetRemainedTiles()
     {
         RemainedHiddenTiles = _cachedHiddenTiles;
-        Debug.Log($"Reset! Remained tiles: {RemainedHiddenTiles}");
-    }
-
-    public void FailEndOfRound()
-    {
-        Debug.Log("Time's up. You fail to pass this round. Good luck next time.");
     }
 
     public bool SetupRound()
@@ -209,8 +142,6 @@ public class GameManager : MonoBehaviour
         _cachedHiddenTiles = RemainedHiddenTiles;
 
         SpawnPlayer();
-
-        Debug.Log($"Round {CurrentRoundNumber}: {RemainedHiddenTiles} tiles");
 
         return true;
     }
@@ -293,8 +224,6 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        //DebugDetectMouseClick();
-
         if (_isTimerOn)
         {
             CurrentTimer = Mathf.Clamp(CurrentTimer - Time.deltaTime, 0f, CurrentTimer);
@@ -302,49 +231,19 @@ public class GameManager : MonoBehaviour
 
             if (CurrentTimer <= 0)
             {
-                // todo: use delefate to trigger function(s) needed for game over state!!!
-                DisablePlayState();
-                _uiHandler.ShowGameOverScreen(false);
-                _audioManager.ToggleBGM(false);
+                ProcessGameOver();
             }
             else if (CurrentTimer <= 5 && (CurrentTimer + Time.deltaTime) > 5)
             {
-                Debug.Log("Less than 5 seconds left");
+                //Debug.Log("Less than 5 seconds left");
                 _timerNearEndEvent.Invoke();
-            }
-        }
-    }
-
-    private void DebugDetectMouseClick()
-    {
-        bool isLeftClick = Input.GetMouseButtonDown(0);
-        if (isLeftClick || Input.GetMouseButtonDown(1))
-        {
-            RaycastHit hit;
-            Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
-
-            if (Physics.Raycast(ray, out hit))
-            {
-                if (hit.transform.CompareTag("Tile"))
-                {
-                    Tile tileScript = hit.transform.gameObject.GetComponent<Tile>();
-                    if (isLeftClick)
-                    {
-                        tileScript.FlickerTile(1);
-                    }
-                    else
-                    {
-                        if (tileScript.IsTriggered) tileScript.UntriggerTile();
-                        else tileScript.TriggerTile();
-                    }
-                }
             }
         }
     }
 
     private void InitRoundInfo()
     {
-        const int totalRounds = 1;
+        const int totalRounds = 5;
         const int roundTimer = 15;
         const int complexRoundStartIndex = 3;
 
@@ -369,6 +268,13 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void ProcessGameOver()
+    {
+        DisablePlayState();
+        _uiHandler.ShowGameOverScreen(false);
+        _audioManager.ToggleBGM(false);
+    }
+
     private IEnumerator PreRoundProcessRoutine()
     {
         yield return _startRoundWaitTime;
@@ -390,7 +296,6 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator AdvanceRoundRoutine()
     {
-        Debug.Log($"Next round in {_advanceNextRoundDelay} seconds...");
         yield return new WaitForSeconds(_advanceNextRoundDelay);
 
         if (CurrentRoundNumber >= GetTotalRounds())

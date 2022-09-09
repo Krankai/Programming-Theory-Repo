@@ -17,14 +17,6 @@ public class NumberedTile : SpecialTile
         set { _orderNumber = value > 0 ? value : 1; }
     }
 
-    // public override void TriggerTile()
-    // {
-    //     if (IsFlickered || IsTriggered) return;
-    //     ShowTrueTile();
-
-    //     TriggerDelegate?.Invoke(gameObject, IsValidTrigger());
-    // }
-
     protected override void Start()
     {
         base.Start();

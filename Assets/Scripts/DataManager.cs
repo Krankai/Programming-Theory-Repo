@@ -7,6 +7,7 @@ public class DataManager : MonoBehaviour
     public static DataManager Instance { get; private set; }
 
     private string _playerName;
+    
     public string PlayerName
     {
         get { return _playerName; }

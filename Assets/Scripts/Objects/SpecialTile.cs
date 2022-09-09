@@ -4,32 +4,25 @@ using UnityEngine;
 
 public class SpecialTile : Tile
 {
-    [SerializeField] protected Color _triggerColor = Color.red;
+    public Color TileColor { get; protected set; }
+    
+    [SerializeField] private Color _baseColor = Color.white;
 
-    //private Renderer _renderer;
+    [SerializeField] private Color _triggerColor = Color.red;
+
+    private Material _material;
 
     protected override void Awake()
     {
         base.Awake();
-        
-        //_renderer = GetComponent<Renderer>();
-    }
 
-    protected override void Start()
-    {
-        base.Start();
-
-        //_baseColor = TileColor;
-        //TileColor = Color.red;
-
-        //_triggerEvent.AddListener(GameManager.Instance.UpdateRemainedTiles);
+        _material = GetComponent<Renderer>().material;
     }
 
     protected override void ShowTrueTile()
     {
         base.ShowTrueTile();
 
-        //_renderer.material.color = TileColor;
         TileColor = _triggerColor;
         UpdateTileColor();
     }
@@ -38,8 +31,12 @@ public class SpecialTile : Tile
     {
         base.HideTrueTile();
 
-        //_renderer.material.color = _baseColor;
         TileColor = _baseColor;
         UpdateTileColor();
+    }
+
+    protected void UpdateTileColor()
+    {
+        _material.color = TileColor;
     }
 }

@@ -82,6 +82,8 @@ public class GameUIHandler : MonoBehaviour
 
     private void UpdateScoreUi(float value) => _scoreText.text = value.ToString("F2");
 
+    private void UpdateFinalScoreUi(float value) => _finalScoreText.text = $"Final Score: {value.ToString("F2")}";
+
     public void Reset()
     {
         _timerFlickerCoroutine = null;
@@ -93,17 +95,14 @@ public class GameUIHandler : MonoBehaviour
 
     public void OnUpdateTimer()
     {
-        //_timerText.text = GameManager.Instance.CurrentTimer.ToString("F2");
         UpdateTimerUi(GameManager.Instance.CurrentTimer);
     }
 
     public void OnUpdateScore()
     {
-        //_scoreText.text = GameManager.Instance.CurrentScore.ToString("F2");
         UpdateScoreUi(GameManager.Instance.CurrentScore);
     }
 
-    [ContextMenu("Flicker Timer")]
     public void FlickerTimerNearEndColor()
     {
         _timerFlickerCoroutine = StartCoroutine(FlickerTextUiColorRoutine(_timerText, _timerBaseColor, _timerNearEndColor, _timerFlickerFrequency));
@@ -117,7 +116,6 @@ public class GameUIHandler : MonoBehaviour
         }
     }
 
-    [ContextMenu("Flicker Score")]
     public void FlickerScoreUpdateColor()
     {
         StartCoroutine(FlickerTextUiColorRoutine(_scoreText, _scoreBaseColor, _scoreUpdateColor, _scoreFlickerFrequency));
@@ -161,16 +159,15 @@ public class GameUIHandler : MonoBehaviour
 
     public void ShowGameOverScreen(bool isSuccess)
     {
-        string scoreText = GameManager.Instance.CurrentScore.ToString("F2");
+        // string scoreText = GameManager.Instance.CurrentScore.ToString("F2");
+        // _finalScoreText.text = $"Final Score: {scoreText}";
+        UpdateFinalScoreUi(GameManager.Instance.CurrentScore);
 
-        _finalScoreText.text = $"Final Score: {scoreText}";
-        //_gameOverGroup.SetActive(true);
         _gameOverUiHandler.EnableUiWithSuccess(isSuccess);
     }
 
     public void HideGameOverScreen()
     {
-        //_gameOverGroup.SetActive(false);
         _gameOverUiHandler.DisableUi();
     }
 
@@ -180,17 +177,16 @@ public class GameUIHandler : MonoBehaviour
         _scoreBaseColor = _scoreText.color;
 
         _gameOverUiHandler = _gameOverGroup.GetComponent<GameOverUIHandler>();
+
+        _flickerWaitTime = new WaitForSeconds(_flickerDelay);
+        _countdownWaitTime = new WaitForSeconds(1);
+        _transitionStartWaitTime = new WaitForSeconds(_transitionStartDelay);
+        _hideClearUiWaitTime = new WaitForSeconds(_hideClearUiDelay);
     }
 
     private void Start()
     {
-        _flickerWaitTime = new WaitForSeconds(_flickerDelay);
         _isTransitionOn = false;
-
-        _countdownWaitTime = new WaitForSeconds(1);
-        _transitionStartWaitTime = new WaitForSeconds(_transitionStartDelay);
-        _hideClearUiWaitTime = new WaitForSeconds(_hideClearUiDelay);
-
         Reset();
     }
 
@@ -235,6 +231,7 @@ public class GameUIHandler : MonoBehaviour
         {
             textUi.color = flickerColor;
             yield return _flickerWaitTime;
+            
             textUi.color = baseColor;
             yield return _flickerWaitTime;
         }

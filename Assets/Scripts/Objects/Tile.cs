@@ -9,9 +9,9 @@ public class Tile : MonoBehaviour
 
     public OnTriggerDelegate TriggerDelegate;
 
-    public Color TileColor { get; protected set; }
+    //public Color TileColor { get; protected set; }
 
-    [SerializeField] protected Color _baseColor = Color.white;
+    //[SerializeField] protected Color _baseColor = Color.white;
 
     [SerializeField] private float _minDistance = 1.4f;
 
@@ -25,7 +25,7 @@ public class Tile : MonoBehaviour
 
     private BoxCollider _collider;
 
-    private Renderer _renderer;
+    //private Renderer _renderer;
 
     public bool IsFlickered => _isFlickered;
 
@@ -78,15 +78,13 @@ public class Tile : MonoBehaviour
             _collider = GetComponent<BoxCollider>();
         }
 
-        _renderer = GetComponent<Renderer>();
-
-        //_triggerEvent = new UnityEvent();
+        //_renderer = GetComponent<Renderer>();
     }
 
     protected virtual void Start()
     {
-        TileColor = _baseColor;
-        UpdateTileColor();
+        //TileColor = _baseColor;
+        //UpdateTileColor();
 
         _isFlickered = false;
         _isTriggered = false;
@@ -103,10 +101,10 @@ public class Tile : MonoBehaviour
         _isTriggered = false;
     }
 
-    protected void UpdateTileColor()
-    {
-        _renderer.material.color = TileColor;
-    }
+    // protected void UpdateTileColor()
+    // {
+    //     _renderer.material.color = TileColor;
+    // }
 
     protected virtual bool IsValidTrigger()
     {

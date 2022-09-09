@@ -7,18 +7,6 @@ public class BoardManager : MonoBehaviour
 {
     public bool IsInitBoard { get; private set; }
 
-    // public Vector3 MidPoint { get; private set; }
-
-    // public float GetRowLength() => _rowLength;
-
-    // public float GetColLength() => _colLength;
-
-    public float RowLength => _spawnManager.GetTileSideLength() * _rows;
-
-    public float ColLength => _spawnManager.GetTileSideLength() * _columns;
-
-    public Vector3 MidPoint => new Vector3(_midbotBoardTransform.position.x, 0, _midbotBoardTransform.position.z + ColLength / 2);
-
     [SerializeField] private int _rows;
 
     [SerializeField] private int _columns;
@@ -33,10 +21,6 @@ public class BoardManager : MonoBehaviour
 
     [SerializeField] private UnityEvent _resetTileEvent;
 
-    private Transform TileGroupTransform => _tilesGroupObject ? _tilesGroupObject.transform : transform;
-
-    private Transform BoundaryGroupTransform => _boundariesGroupObject ? _boundariesGroupObject.transform : transform;
-
     private TileType[,] _tileMatrix;
 
     private SpawnManager _spawnManager;
@@ -44,6 +28,16 @@ public class BoardManager : MonoBehaviour
     private AudioManager _audioManager;
 
     private List<GameObject> _triggerTileList;
+
+    public float RowLength => _spawnManager.GetTileSideLength() * _rows;
+
+    public float ColLength => _spawnManager.GetTileSideLength() * _columns;
+
+    public Vector3 MidPoint => new Vector3(_midbotBoardTransform.position.x, 0, _midbotBoardTransform.position.z + ColLength / 2);
+
+    private Transform TileGroupTransform => _tilesGroupObject ? _tilesGroupObject.transform : transform;
+
+    private Transform BoundaryGroupTransform => _boundariesGroupObject ? _boundariesGroupObject.transform : transform;
 
     public int GetNumberTriggeredTiles() => _triggerTileList.Count;
 
@@ -53,13 +47,12 @@ public class BoardManager : MonoBehaviour
         {
             ClearBoard();
         }
+        IsInitBoard = true;
 
         int hiddenTiles = DistributeTiles(numberedTileCount);
         SpawnTiles(hiddenTiles);
 
         SetupBoundaries();
-
-        IsInitBoard = true;
 
         return hiddenTiles;
     }
@@ -133,7 +126,7 @@ public class BoardManager : MonoBehaviour
 
         if (!isValid)
         {
-            Debug.Log("INVALID TRIGGER!!!");
+            //Debug.Log("INVALID TRIGGER!!!");
 
             TileType type = TileType.Normal;
             if (tile.GetComponent<NumberedTile>() != null)
@@ -230,6 +223,29 @@ public class BoardManager : MonoBehaviour
         Vector3 topLeftPosition = new Vector3(_midbotBoardTransform.position.x - RowLength / 2f, 0f, _midbotBoardTransform.position.z + ColLength);
 
         // Spawning...
+        // _spawnManager.InitOrderNumberPool(maxPossibleOrderNumber);
+        // for (int i = 0; i < _rows; ++i)
+        // {
+        //     for (int j = 0; j < _columns; ++j)
+        //     {
+        //         TileType type = _tileMatrix[i,j];
+
+        //         Vector3 spawnPosition = topLeftPosition + new Vector3((j + 0.5f) * tileSideLength, 0, -(0.5f + i) * tileSideLength);
+        //         GameObject tile = _spawnManager.SpawnTile(type, spawnPosition, _tilesGroupObject ? _tilesGroupObject.transform : transform);
+
+        //         // Register delegate function
+        //         if (TileType.Special == type || TileType.Numbered == type)
+        //         {
+        //             Tile script = tile.GetComponent<Tile>();
+
+        //             script.TriggerDelegate += OnTriggerTile;
+        //             script.TriggerDelegate += GameManager.Instance.UpdateRemainedTiles;
+        //             script.TriggerDelegate += _audioManager.OnPlayTriggerAudio;
+        //         }
+        //     }
+        // }
+
+        // Spawning v2.0
         _spawnManager.InitOrderNumberPool(maxPossibleOrderNumber);
         for (int i = 0; i < _rows; ++i)
         {
@@ -238,19 +254,15 @@ public class BoardManager : MonoBehaviour
                 TileType type = _tileMatrix[i,j];
 
                 Vector3 spawnPosition = topLeftPosition + new Vector3((j + 0.5f) * tileSideLength, 0, -(0.5f + i) * tileSideLength);
-                GameObject tile = _spawnManager.SpawnTile(type, spawnPosition, _tilesGroupObject ? _tilesGroupObject.transform : transform);
-
-                // Register delegate function
-                if (TileType.Special == type || TileType.Numbered == type)
-                {
-                    Tile script = tile.GetComponent<Tile>();
-
-                    script.TriggerDelegate += OnTriggerTile;
-                    script.TriggerDelegate += GameManager.Instance.UpdateRemainedTiles;
-                    script.TriggerDelegate += _audioManager.OnPlayTriggerAudio;
-                }
+                _spawnManager.SpawnOrCacheTile(type, spawnPosition, _tilesGroupObject ? _tilesGroupObject.transform : transform);
             }
         }
+
+        Tile.OnTriggerDelegate delegate1 = OnTriggerTile;
+        Tile.OnTriggerDelegate delegate2 = GameManager.Instance.UpdateRemainedTiles;
+        Tile.OnTriggerDelegate delegate3 = _audioManager.OnPlayTriggerAudio;
+
+        _spawnManager.SpawnCachedSpecialTiles(delegate1, delegate2, delegate3);
     }
 
     private void SetupBoundaries()

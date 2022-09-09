@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class SpawnManager : MonoBehaviour
 {
-    public float GetTileSideLength() => _tileScript.GetSideLength();
-
     [SerializeField] private GameObject _normalTilePrefab;
 
     [SerializeField] private GameObject _specialTilePrefab;
@@ -14,11 +12,15 @@ public class SpawnManager : MonoBehaviour
 
     [SerializeField] private GameObject _playerPrefab;
 
+    private int _maxOrderNumber;
+
     private Tile _tileScript;
+
+    private List<CachedSpecialTile> _cachedSpecialTiles;
 
     private List<int> _orderNumberPool;
 
-    private int _maxOrderNumber;
+    public float GetTileSideLength() => _tileScript.GetSideLength();
 
     public GameObject SpawnTile(TileType type, Vector3 spawnPosition, Transform parent)
     {
@@ -35,12 +37,62 @@ public class SpawnManager : MonoBehaviour
         GameObject tileObject = Instantiate(spawnPrefab, spawnPosition, spawnPrefab.transform.rotation, parent);
         if (TileType.Numbered == type)
         {
-            //int orderNumber = Random.Range(1, maxPossibleOrderNumber + 1);
-            //tileObject.GetComponent<NumberedTile>().OrderNumber = Random.Range(1, orderNumber);
             tileObject.GetComponent<NumberedTile>().OrderNumber = GetOrderNumberFromPool();
         }
 
         return tileObject;
+    }
+
+    // Either spawn (if normal tile) or cache (if special tile) for later spawning (to improve batching performance)
+    public void SpawnOrCacheTile(TileType type, Vector3 spawnPosition, Transform parent)
+    {
+        if (TileType.Normal != type)
+        {
+            // Cache
+            CachedSpecialTile cachedTile = new CachedSpecialTile();
+            cachedTile._type = type;
+            cachedTile._spawnPosition = spawnPosition;
+            cachedTile._parentTransform = parent;
+
+            _cachedSpecialTiles.Add(cachedTile);
+
+            return;
+        }
+
+        // Spawn
+        Instantiate(_normalTilePrefab, spawnPosition, _normalTilePrefab.transform.rotation, parent);
+    }
+
+    public void SpawnCachedSpecialTiles(params Tile.OnTriggerDelegate[] delegates)
+    {
+        foreach (var spawnTileInfo in _cachedSpecialTiles)
+        {
+            Vector3 spawnPosition = spawnTileInfo._spawnPosition;
+            Transform parent = spawnTileInfo._parentTransform;
+            
+            GameObject spawnPrefab = _normalTilePrefab;
+            switch (spawnTileInfo._type)
+            {
+                case TileType.Special:
+                    spawnPrefab = _specialTilePrefab;
+                    break;
+                case TileType.Numbered:
+                    spawnPrefab = _numberedTilePrefab;
+                    break;
+            }
+
+            GameObject tileObject = Instantiate(spawnPrefab, spawnPosition, spawnPrefab.transform.rotation, parent);
+            if (TileType.Numbered == spawnTileInfo._type)
+            {
+                tileObject.GetComponent<NumberedTile>().OrderNumber = GetOrderNumberFromPool();
+            }
+
+            Tile tileScript = tileObject.GetComponent<Tile>();
+            foreach (var delegateFunc in delegates)
+            {
+                tileScript.TriggerDelegate += delegateFunc;
+            }
+        }
     }
 
     public GameObject SpawnPlayer(Vector3 spawnPosition)
@@ -64,6 +116,7 @@ public class SpawnManager : MonoBehaviour
     private void Awake()
     {
         _tileScript = _normalTilePrefab.GetComponent<Tile>();
+        _cachedSpecialTiles = new List<CachedSpecialTile>();
         _orderNumberPool = new List<int>();
     }
 
@@ -77,4 +130,11 @@ public class SpawnManager : MonoBehaviour
         _orderNumberPool.RemoveAt(index);
         return value;
     }
+}
+
+struct CachedSpecialTile
+{
+    public TileType _type;
+    public Transform _parentTransform;
+    public Vector3 _spawnPosition;
 }

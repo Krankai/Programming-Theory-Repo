@@ -17,7 +17,6 @@ public class TitleScreenUIHandler : MonoBehaviour
 
     public void StartGame()
     {
-        //Debug.Log("Start game with player's name: " + DataManager.Instance.PlayerName);
         if (string.IsNullOrEmpty(DataManager.Instance.PlayerName))
         {
             DataManager.Instance.PlayerName = "Anonymous";
