@@ -93,6 +93,9 @@ public class SpawnManager : MonoBehaviour
                 tileScript.TriggerDelegate += delegateFunc;
             }
         }
+
+        // Clear after done processing cached tiles
+        _cachedSpecialTiles.Clear();
     }
 
     public GameObject SpawnPlayer(Vector3 spawnPosition)

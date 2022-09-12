@@ -19,7 +19,7 @@ GameObject:
   m_TagString: Tile
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 4294967295
+  m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!4 &147573967288485886
 Transform:
@@ -126,9 +126,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7fa4e7b327bce444e80baf69f83ef1b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _baseColor: {r: 1, g: 1, b: 1, a: 1}
   _minDistance: 1.4
   _flickerDelay: 0.1
+  _baseColor: {r: 1, g: 1, b: 1, a: 1}
   _triggerColor: {r: 1, g: 0, b: 0, a: 1}
   _invalidColor: {r: 0, g: 0.7929422, b: 0.9150943, a: 0}
   _numberText: {fileID: 147573967685845555}
@@ -149,7 +149,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 4294967295
+  m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!224 &147573967685845554
 RectTransform:
@@ -231,7 +231,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 4294967295
+  m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!224 &147573968111110688
 RectTransform:

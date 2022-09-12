@@ -19,7 +19,7 @@ GameObject:
   m_TagString: Tile
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 4294967295
+  m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!4 &4028730484520420216
 Transform:
@@ -125,7 +125,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e430fe728636d314aaf45e50301228d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _baseColor: {r: 1, g: 1, b: 1, a: 1}
   _minDistance: 1.4
   _flickerDelay: 0.1
+  _baseColor: {r: 1, g: 1, b: 1, a: 1}
   _triggerColor: {r: 1, g: 0, b: 0, a: 1}
