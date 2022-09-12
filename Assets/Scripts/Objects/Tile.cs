@@ -33,6 +33,7 @@ public class Tile : MonoBehaviour
 
     public bool IsNear(Vector3 comparePosition) => Vector3.Distance(comparePosition, transform.position) <= _minDistance;
 
+    // ABSTRACTION
     public float GetSideLength()
     {
         if (_collider == null)
@@ -100,11 +101,6 @@ public class Tile : MonoBehaviour
     {
         _isTriggered = false;
     }
-
-    // protected void UpdateTileColor()
-    // {
-    //     _renderer.material.color = TileColor;
-    // }
 
     protected virtual bool IsValidTrigger()
     {

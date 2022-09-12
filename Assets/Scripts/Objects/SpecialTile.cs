@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// INHERITANCE
 public class SpecialTile : Tile
 {
     public Color TileColor { get; protected set; }
@@ -19,6 +20,7 @@ public class SpecialTile : Tile
         _material = GetComponent<Renderer>().material;
     }
 
+    // POLYMORPHISM
     protected override void ShowTrueTile()
     {
         base.ShowTrueTile();
@@ -27,6 +29,7 @@ public class SpecialTile : Tile
         UpdateTileColor();
     }
 
+    // POLYMORPHISM
     protected override void HideTrueTile()
     {
         base.HideTrueTile();

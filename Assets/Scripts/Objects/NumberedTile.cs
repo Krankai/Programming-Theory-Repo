@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+// INHERITANCE
 public class NumberedTile : SpecialTile
 {
     [SerializeField] private Color _invalidColor = Color.cyan;
 
     [SerializeField] private Text _numberText;
 
+    // ENCAPSULATION
     [SerializeField] private int _orderNumber;
 
     public int OrderNumber
@@ -24,6 +26,7 @@ public class NumberedTile : SpecialTile
         _numberText.text = "";
     }
 
+    // POLYMORPHISM
     protected override void ShowTrueTile()
     {
         base.ShowTrueTile();
@@ -37,6 +40,7 @@ public class NumberedTile : SpecialTile
         }
     }
 
+    // POLYMORPHISM
     protected override void HideTrueTile()
     {
         base.HideTrueTile();
